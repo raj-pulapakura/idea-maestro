@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16
+    container_name: idea-maestro-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: idea_maestro
+      POSTGRES_USER: idea_maestro
+      POSTGRES_PASSWORD: idea_maestro_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U idea_maestro -d idea_maestro"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: idea-maestro-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://idea_maestro:idea_maestro_password@db:5432/idea_maestro
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: idea-maestro-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+
