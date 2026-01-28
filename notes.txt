@@ -1,0 +1,55 @@
+checkpoint library: langgraph-checkpoint-postgres https://docs.langchain.com/oss/python/langgraph/persistence#checkpointer-libraries
+
+
+write_file node
+ask approval
+wait for response on a separate http endpoint
+on that endpoint, resume execution
+
+
+docker compose -f docker-compose.dev.yml up --build
+
+psql "host=localhost port=5432 dbname=postgres user=postgres"
+
+
+
+agent graph which is accessible from function like:
+
+get_agent_graph()
+
+every endpoint that needs to execute the graph just calls:
+
+
+    with PostgresSaver.from_conn_string(DB_URL) as checkpointer:
+
+        checkpointer.setup()
+        graph = get_agent_graph(checkpointer)
+
+
+we could even create a decorator for the checkpointer
+
+
+user questions scenarios:
+- if the user is replying to a specific agent's question, that agent is automatically triggered
+- if the user @s an agent directly, that agent is automatically triggered
+- if the user does not do any of the above, the maestro is triggered
+
+
+agent process:
+
+1. think (reason): decide what step to take next
+
+2. gather: gather information (from the user) or from files (read files)
+
+3. act: make edits to files, handoff to another agent
+-> seek approval before editing files
+
+
+
+each agent has:
+
+- system prompt: a base set of instructions (personality, goals, ego)
+
+the maestro will have a special system prompt, as it orchestrates the others,
+however even the other agents will be able to talk to each other, but everything goes through the approval of the maestro
+

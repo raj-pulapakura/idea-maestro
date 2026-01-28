@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from typing import TypedDict
 from langchain_core.messages import AIMessageChunk
@@ -9,6 +9,8 @@ from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.checkpoint.memory import InMemorySaver, MemorySaver
 from langgraph.types import Command, interrupt
 import os
+
+from agents.main import build_workflow
 
 model = init_chat_model(model="gpt-4o-mini", temperature=0.0)
 
@@ -42,59 +44,93 @@ def make_edit(state: State) -> State:
 def cancel(state: State) -> State:
     return {"document": state["document"]}
 
-
-
-workflow = StateGraph(State)
-workflow.add_node("suggest_edit", suggest_edit)
-workflow.add_node("approve_edit", approve_edit)
-workflow.add_node("make_edit", make_edit)
-workflow.add_node("cancel", cancel)
-workflow.add_edge(START, "suggest_edit")
-workflow.add_edge("suggest_edit", "approve_edit")
-workflow.add_edge("approve_edit", "make_edit")
-workflow.add_edge("make_edit", END)
-workflow.add_edge("cancel", END)
-checkpointer = InMemorySaver()
-graph = workflow.compile(checkpointer=checkpointer)
+DB_URL = os.getenv("DATABASE_URL") + "?sslmode=disable"
+print(DB_URL)
 
 
 
 router = APIRouter(prefix="/api", tags=["test"])
 
 
-@router.get("/test")
-async def api_test():
+def checkpointer_decorator(func):
+    """
+    Decorator that opens a PostgresSaver context for the duration of the request
+    and attaches it to request.state.checkpointer.
 
-    async for mode, chunk in graph.astream(
-        {"document": "Cats are better than dogs."}, 
+    Note: The wrapper intentionally only accepts `request: Request` so FastAPI
+    does not interpret extra *args/**kwargs as query parameters.
+    """
+
+    async def wrapper(request: Request):
+        with PostgresSaver.from_conn_string(DB_URL) as checkpointer:
+            checkpointer.setup()
+            request.state.checkpointer = checkpointer
+            return await func(request)
+
+    return wrapper
+
+
+
+
+@router.get("/test")
+@checkpointer_decorator
+async def api_test(request: Request):
+    checkpointer = getattr(request.state, "checkpointer", None)
+
+    workflow = build_workflow()
+    graph = workflow.compile(checkpointer=checkpointer)
+
+    is_thinking = False
+
+    for mode, chunk in graph.stream(
+        {"user_query": "I want to build a meme cat app"},
         stream_mode=["messages", "updates"],
-        config=config
+        config=config,
     ):
-    
         if mode == "messages":
             msg, _ = chunk
-            if isinstance(msg, AIMessageChunk) and msg.content:
-                print(msg.content, end="")
-        
+            msg: AIMessageChunk = msg
+            if len(msg.content) == 0: continue
+
+            type = msg.content[0]["type"]
+
+            if type == "thinking" and "thinking" in msg.content[0]:
+                if not is_thinking:
+                    is_thinking = True
+                    print("Thinking: ", end="")
+                text = msg.content[0]["thinking"]
+                print(text, end="")
+            elif type == "text" and "text" in msg.content[0]:
+                if is_thinking:
+                    is_thinking = False
+                    print("\n Response: ", end="")
+                text = msg.content[0]["text"]
+                print(text, end="")
+
         elif mode == "updates":
             if "__interrupt__" in chunk:
                 print("\ninterrupted, breaking. waiting for user approval.")
                 break
-
             else:
-                pass
                 # print("state update: ", chunk)
-
+                pass
 
     return {"ok": True, "route": "/api/test", "state": ""}
 
 
 @router.post("/approve")
-async def approve():
+@checkpointer_decorator
+async def approve(request: Request):
+    # Use the PostgresSaver context attached by the decorator
+    checkpointer = getattr(request.state, "checkpointer", None)
+
+    workflow = build_workflow()
+    graph = workflow.compile(checkpointer=checkpointer)
+
     async for mode, chunk in graph.astream(
         Command(resume=True),
         stream_mode=["messages", "updates"],
-        config=config
+        config=config,
     ):
         if mode == "messages":
             msg, _ = chunk
