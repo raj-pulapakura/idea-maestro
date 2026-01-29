@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes.test import router as test_router
+from app.routes.test import router as test_router
+from app.routes.chat import router as chat_router
 
 
 app = FastAPI(title="Idea Maestro Backend", version="0.1.0")
@@ -14,26 +15,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
 
-
-@app.get("/")
-async def root():
-    return {"message": "Idea Maestro backend is running"}
-
-
-# Placeholder for future chat/agent endpoint
-@app.post("/api/chat")
-async def chat():
-    # TODO: accept a payload from the frontend, call LLM/agents, and return a response
-    return {"message": "Chat endpoint placeholder"}
-
-
 app.include_router(test_router)
-
+app.include_router(chat_router)
 
 if __name__ == "__main__":
     import uvicorn

@@ -9,7 +9,8 @@ on that endpoint, resume execution
 
 docker compose -f docker-compose.dev.yml up --build
 
-psql "host=localhost port=5432 dbname=postgres user=postgres"
+psql "host=localhost port=5432 dbname=idea_maestro user=idea_maestro"
+
 
 
 
@@ -53,3 +54,25 @@ each agent has:
 the maestro will have a special system prompt, as it orchestrates the others,
 however even the other agents will be able to talk to each other, but everything goes through the approval of the maestro
 
+
+not supporting events yet in the db schema
+
+
+
+==*
+on persisting messages
+
+knowns:
+- langchain has specific abstractions for messages
+- if a node returns a list of messages in a state return, these are considered "deltas" and are automatically appended to the state messages list
+- messages need to be persisted to support UI rendering and users visiting previous chats
+- db: postgres
+- langgraph also uses postgres for its checkpointer feature (resuming interuptions), however this is separate from the concern of persisting messages
+
+actions:
+- created a chat_messages table which stores all messages
+    (grain is currently one row per message per thread)
+    (but in future it will be one row per message per thread per user, adding a user_id col)
+- added a 'seq' column, which is monotonically increasing by thread_id
+- need to persist message deltas at the end of every node
+*==
