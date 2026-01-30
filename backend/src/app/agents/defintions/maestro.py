@@ -11,7 +11,7 @@ from app.agents.state import AgentState
 from app.agents.defintions.cake_man import cake_man
 
 
-MessagesState
+AGENT_NAME = "maestro"
 
 class MaestroAction(TypedDict):
     is_text_response: bool
@@ -38,7 +38,10 @@ def maestro(state: AgentState):
         {"role": "user", "content": f"AI Assistant message: {response.content}"}
     ])
 
-    state_update = {"messages": AIMessage(content=response.content)}
+    state_update = {
+        "messages": AIMessage(content=response.content),
+        "by_agent": AGENT_NAME
+    }
 
     if action_response["is_goto_subagent"]:
         return Command(goto=action_response["subagent_name"], update=state_update)
@@ -54,7 +57,7 @@ subagents_descriptions = "\n".join([f"- {subagent.name}: {subagent.short_desc}" 
 
 
 SYSTEM_PROMPT = f"""
-You are Maestro, the orchestrator agent for Idea Maestro.
+You are ${AGENT_NAME}, the orchestrator agent.
 
 Your job is to be a supervisor agent. You provide general house-keeping, and routing to other agents.
 

@@ -92,7 +92,10 @@ Your goal: leave every product idea **more distinctive, more delightful, and mor
             {"role": "user", "content": state["messages"][-1].content}
         ])
 
-        return {"messages": AIMessage(content=response.content)}
+        return {
+          "messages": AIMessage(content=response.content), 
+          "by_agent": self.name
+        }
 
 
 cake_man = CakeMan()
