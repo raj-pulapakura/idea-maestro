@@ -11,6 +11,12 @@ def append_history(old: list[Any] | None, new: list[Any] | None) -> list[Any]:
     """Accumulate history entries."""
     return (old or []) + (new or [])
 
+def append_proposed_edits(
+    old: list["ProposedEdit"] | None,
+    new: list["ProposedEdit"] | None,
+) -> list["ProposedEdit"]:
+    return (old or []) + (new or [])
+
 def merge_docs(
     old: dict[str, "Doc"] | None,
     new: dict[str, "Doc"] | None,
@@ -49,7 +55,7 @@ class ProposedEdit(TypedDict):
 
 class ChangeSet(TypedDict):
     change_set_id: str
-    agent_author: str
+    created_by: str
     created_at: str
     edits: list[ProposedEdit]
     diffs: dict[str, str]
@@ -62,4 +68,7 @@ class AgentState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     history: Annotated[list[Any], append_history]
     docs: Annotated[dict[str, Doc], merge_docs]
+    proposed_edits: Annotated[list[ProposedEdit], append_proposed_edits]
+    proposal_summary: str
+    proposal_by: str
     pending_change_set: Annotated[ChangeSet | None, set_pending_change_set]

@@ -77,7 +77,9 @@ actions:
 - need to persist message deltas at the end of every node
 *==
 
-DDL:
+==*
+
+DDL
 
 create table if not exists chat_messages (
   id bigserial primary key,
@@ -105,3 +107,19 @@ create table if not exists chat_threads (
   thread_id text primary key,
   next_seq bigint not null default 1
 );
+
+*==
+
+sub-agent prompt structure
+
+agent-name (agent-specific)
+short-description (agent-specific)
+core-values (agent-specific)
+agent-goals (agent-specific)
+style-and-tone (agent-specific)
+
+shared-documents (global)
+tool-use (global)
+
+*==
+

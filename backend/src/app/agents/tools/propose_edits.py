@@ -1,0 +1,51 @@
+from langchain_core.tools import tool
+from langchain.tools import ToolRuntime
+from langgraph.types import Command
+from pydantic import BaseModel, Field
+
+from app.agents.helpers.emit_event import emit_event
+from app.agents.state import AgentState
+
+
+class ProposedEdit(BaseModel):
+    doc_id: str = Field(description="The ID of the document to edit")
+    new_content: str = Field(description="The new content of the document. Provide the full content, not just a diff.")
+
+
+class ProposedEditsInput(BaseModel):
+    edits: list[ProposedEdit] = Field(description="A list of proposed edits to the documents")
+    summary: str = Field(description="Short summary of the proposed edits")
+    by: str = Field(description="Name of the agent proposing the edits")
+
+
+@tool(args_schema=ProposedEditsInput)
+def propose_edits(edits: ProposedEditsInput, runtime: ToolRuntime):
+    """
+    Propose edits to one or more documents. Does not mutate docs.
+    """
+    state: AgentState = runtime.state
+    docs = state.get("docs") or {}
+    normalized_edits = [edit.model_dump() for edit in edits.edits]
+
+    for edit in normalized_edits:
+        doc_id = edit["doc_id"]
+        if doc_id not in docs:
+            raise ValueError(f"Unknown doc_id: {doc_id}")
+
+    emit_event(
+        "agent.proposed_edits",
+        {
+            "by": edits.by,
+            "docs": [e["doc_id"] for e in normalized_edits],
+            "summary": edits.summary,
+        },
+    )
+
+    return Command(
+        update={
+            "proposed_edits": normalized_edits,
+            "proposal_summary": edits.summary,
+            "proposal_by": edits.by,
+        },
+        goto="build_changeset",
+    )
