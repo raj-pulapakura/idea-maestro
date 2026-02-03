@@ -11,7 +11,7 @@ from app.db.persist_messages_to_db import persist_messages_to_db
 from app.db.get_conn_factory import conn_factory
 from app.db.lc_message_to_row import lc_message_to_row
 from app.db.fetch_thread_messages import fetch_thread_messages
-from app.agents.state import AgentState
+from app.agents.state.get_initial_state_update import get_initial_state_update
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -39,26 +39,26 @@ async def api_chat(request: Request, thread_id: str):
 
         state_update = get_initial_state_update(is_new_thread, thread_id, user_message)
 
-        for mode, chunk in graph.stream(
+        for namespace, mode, data in graph.stream(
             state_update,
             stream_mode=["messages", "updates", "custom"],
             config=config,
+            subgraphs=True
         ):
+            print(f"\n stream update (namespace: {namespace}, mode: {mode})")
             if mode == "messages":
-                msg, _ = chunk
+                msg, _ = data
                 msg: AIMessageChunk = msg
                 print(msg)
 
             elif mode == "custom":
-                print("event: ", chunk)
+                print("event: ", data)
 
             elif mode == "updates":
-                if "__interrupt__" in chunk:
+                print(data)
+                if "__interrupt__" in data:
                     print("\ninterrupted, breaking. waiting for user approval.")
                     break
-                else:
-                    # print("state update: ", chunk)
-                    pass
 
         return {"ok": True, "route": f"/api/chat/{thread_id}", "state": ""}
 
@@ -98,55 +98,3 @@ async def approve_changeset(thread_id: str, payload: ApprovalDecision):
     return {"ok": True, "thread_id": thread_id, "decision": payload.decision}
 
 
-
-def get_initial_state_update(is_new_thread: bool, thread_id: str, user_message: HumanMessage) -> AgentState:
-    state_update: AgentState = {
-        "thread_id": thread_id,
-        "messages": [user_message],
-        "proposed_edits": [],
-        "proposal_summary": "",
-        "proposal_by": "",
-        "pending_change_set": None,
-    }
-
-    if is_new_thread:
-        state_update["docs"] = {
-            "the_pitch": {
-                "title": "The Pitch",
-                "content": "",
-                "updated_by": None,
-                "updated_at": None
-            },
-            "risk_register": {
-                "title": "Risk Register",
-                "content": "",
-                "updated_by": None,
-                "updated_at": None
-            },
-            "business_model": {
-                "title": "Business Model",
-                "content": "",
-                "updated_by": None,
-                "updated_at": None
-            },
-            "feature_roadmap": {
-                "title": "Feature Roadmap",
-                "content": "",
-                "updated_by": None,
-                "updated_at": None
-            },
-            "gtm_plan": {
-                "title": "GTM Plan",
-                "content": "",
-                "updated_by": None,
-                "updated_at": None
-            },
-            "technical_spec": {
-                "title": "Technical Spec",
-                "content": "",
-                "updated_by": None,
-                "updated_at": None
-            }
-        }
-
-    return state_update

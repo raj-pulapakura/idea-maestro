@@ -29,6 +29,18 @@ def merge_docs(
         merged.update(new)
     return merged
 
+def merge_docs_mental_model(
+    old: dict[str, str] | None,
+    new: dict[str, str] | None,
+) -> dict[str, str]:
+    """
+    Merge docs mental model by doc_id. New keys overwrite old keys; others preserved.
+    """
+    merged = dict(old or {})
+    if new:
+        merged.update(new)
+    return merged
+
 def set_pending_change_set(
     old: "ChangeSet | None",
     new: "ChangeSet | None",
@@ -45,6 +57,7 @@ def set_pending_change_set(
 class Doc(TypedDict):
     title: str
     content: str
+    description: str
     doc_type: str
     updated_by: str
     updated_at: str
@@ -68,6 +81,7 @@ class AgentState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     history: Annotated[list[Any], append_history]
     docs: Annotated[dict[str, Doc], merge_docs]
+    docs_summary: Annotated[dict[str, str], merge_docs_mental_model] # summary of the docs for the agent to use in the prompt, so we don't load the entire prompt into memory
     proposed_edits: Annotated[list[ProposedEdit], append_proposed_edits]
     proposal_summary: str
     proposal_by: str

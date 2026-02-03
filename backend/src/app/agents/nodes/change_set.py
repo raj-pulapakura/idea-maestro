@@ -7,7 +7,7 @@ import uuid
 from langgraph.types import Command, interrupt
 
 from app.agents.helpers.emit_event import emit_event
-from app.agents.state import AgentState, ChangeSet, ProposedEdit, Doc
+from app.agents.state.types import AgentState, ChangeSet, ProposedEdit, Doc
 
 
 def _now_iso() -> str:

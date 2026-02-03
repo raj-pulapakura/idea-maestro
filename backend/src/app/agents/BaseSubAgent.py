@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.agents.state import AgentState
+from app.agents.state.types import AgentState
 from langgraph.types import Command
 
 
@@ -15,5 +15,5 @@ class BaseSubAgent(ABC):
         self.system_prompt = system_prompt
 
     @abstractmethod
-    def run(self, state: AgentState) -> Command:
+    def build_subgraph(self, state: AgentState) -> Command:
         ...
