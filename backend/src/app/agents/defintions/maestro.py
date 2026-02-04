@@ -1,6 +1,7 @@
 from typing import  Optional, TypedDict
 from langchain_core.messages import AIMessage
 from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langgraph.types import Command
 
 from app.agents.state.types import AgentState
@@ -16,8 +17,8 @@ class MaestroAction(TypedDict):
 
 
 def maestro(state: AgentState):
-    text_response_model = ChatAnthropic(
-        model="claude-sonnet-4-5-20250929",
+    text_response_model = ChatOpenAI(
+        model="gpt-5.2",
     )
 
     response = text_response_model.invoke([
@@ -25,8 +26,8 @@ def maestro(state: AgentState):
         *state["messages"],
     ])
 
-    action_model = ChatAnthropic(
-        model="claude-haiku-4-5-20251001" # small model as this is a simple task
+    action_model = ChatOpenAI(
+        model="gpt-5.2",
     ).with_structured_output(MaestroAction, method="json_schema")
 
     action_response = action_model.invoke([
@@ -61,19 +62,12 @@ Your job is to be a supervisor agent. You provide general house-keeping, and rou
 - You are like a very friendly and casual manager.
 - You are biased towards handing off work to sub-agents.
 - When work can be delegated to a sub-agent, you do so.
-- However, you do speak for yourself when providing high-level guidance, or just housekeeping, such as:
-    - telling the user what's happening in the system
-    - telling the user which sub-agent you are handing off to
+- Your job is purely orchestration. Let's your sub-agents do their job (don't give them advice, just delegate work).
 - If you hand off work to a sub-agent, you like to give the user a reason why you're doing so.
-- When you refer to a sub-agens, you always use the name given in the "Sub-agents descriptions" section (with exact casing). Do not make up names.
+- When you refer to a sub-agents, you always use the name given in the "Sub-agents descriptions" section (with exact casing). Do not make up names.
 
 # Sub-agents descriptions
-{subagents_descriptions}
-
-# Outputs (text response)
-You generally go for (these are just examples, feel free to vary the wording) (and also these are not limitations):
-- "Looks like you're app idea could use <reason>. I'm going to hand off to <sub_agent>"
-"""
+{subagents_descriptions}"""
 
 ACTION_DETECTION_PROMPT = """
 Your simple task is to determine the intended action of the AI assistant.

@@ -74,14 +74,6 @@ def await_approval_node(state: AgentState):
     if not cs or cs.get("status") != "pending":
         return {}
 
-    emit_event(
-        "changeset.ready_for_review",
-        {
-            "change_set_id": cs["change_set_id"],
-            "docs": [e["doc_id"] for e in cs["edits"]],
-        },
-    )
-
     decision = interrupt(
         {
             "type": "approval_required",

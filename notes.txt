@@ -123,3 +123,12 @@ tool-use (global)
 
 *==
 
+
+
+
+next tasks:
+
+- persist docs
+- fix message persistence for subagents
+- add the rest of the sub agents
+- build UI

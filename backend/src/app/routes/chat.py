@@ -45,16 +45,17 @@ async def api_chat(request: Request, thread_id: str):
             config=config,
             subgraphs=True
         ):
-            print(f"\n stream update (namespace: {namespace}, mode: {mode})")
             if mode == "messages":
                 msg, _ = data
                 msg: AIMessageChunk = msg
-                print(msg)
+                # print(msg)
 
             elif mode == "custom":
-                print("event: ", data)
+                # print("event: ", data)
+                pass
 
             elif mode == "updates":
+                print(f"\n stream update (namespace: {namespace}, mode: {mode})")
                 print(data)
                 if "__interrupt__" in data:
                     print("\ninterrupted, breaking. waiting for user approval.")
@@ -74,24 +75,29 @@ async def get_chat_messages(thread_id: str):
 @router.post("/chat/{thread_id}/approval")
 async def approve_changeset(thread_id: str, payload: ApprovalDecision):
     with PostgresSaver.from_conn_string(DB_URL + "?sslmode=disable") as checkpointer:
-        checkpointer.setup()
         workflow = build_workflow()
         graph = workflow.compile(checkpointer=checkpointer)
         config = {"configurable": {"thread_id": thread_id}}
 
-        async for mode, chunk in graph.astream(
+        print("\n\n\n\n")
+        print(payload.decision)
+        print("\n\n\n\n")
+
+        for namespace, mode, data in graph.stream(
             Command(resume={"decision": payload.decision}),
             stream_mode=["messages", "updates", "custom"],
             config=config,
+            subgraphs=True,
         ):
+            print(f"\n stream update (namespace: {namespace}, mode: {mode})")
             if mode == "messages":
-                msg, _ = chunk
+                msg, _ = data
                 msg: AIMessageChunk = msg
                 print(msg)
             elif mode == "custom":
-                print("event: ", chunk)
+                print("event: ", data)
             elif mode == "updates":
-                if "__interrupt__" in chunk:
+                if "__interrupt__" in data:
                     print("\ninterrupted again, awaiting approval.")
                     break
 

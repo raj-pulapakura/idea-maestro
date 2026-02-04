@@ -49,7 +49,7 @@ class CakeMan(BaseSubAgent):
     def build_subgraph(self):
 
         agent = create_agent(
-                "claude-sonnet-4-5-20250929",
+                "gpt-5.2",
                 tools=[propose_edits, read_docs],
                 middleware=[dynamic_prompt(self.build_system_prompt)],
                 state_schema=AgentState
@@ -66,9 +66,8 @@ class CakeMan(BaseSubAgent):
 
         sg.add_edge("agent", "build_changeset")
         sg.add_edge("build_changeset", "await_approval")
-        sg.add_edge("await_approval", "apply_changeset")
-        sg.add_edge("await_approval", "reject_changeset")
         sg.add_edge("apply_changeset", END)
+        sg.add_edge("reject_changeset", END)
   
         sg.set_entry_point("agent")
         return sg.compile()
