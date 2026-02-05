@@ -1,7 +1,7 @@
 from app.agents.state.types import Doc
 
 
-docs: dict[str, Doc] = {
+empty_docs: dict[str, Doc] = {
     "the_pitch": Doc(
         title="The Pitch",
         description="Describe the problem, solution, target user, value prop, and positioning.",

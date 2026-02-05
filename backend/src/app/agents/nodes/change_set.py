@@ -8,6 +8,8 @@ from langgraph.types import Command, interrupt
 
 from app.agents.helpers.emit_event import emit_event
 from app.agents.state.types import AgentState, ChangeSet, ProposedEdit, Doc
+from app.db.get_conn_factory import conn_factory
+from app.db.persist_docs_to_db import persist_docs_to_db
 
 
 def _now_iso() -> str:
@@ -109,9 +111,16 @@ def apply_changeset_node(state: AgentState) -> dict:
 
         new_doc = dict(old)
         new_doc["content"] = edit["new_content"]
+        new_doc["description"] = cs.get("summary", "")
         new_doc["updated_by"] = cs.get("created_by", "agent")
         new_doc["updated_at"] = _now_iso()
         updates[doc_id] = new_doc
+
+    thread_id = state.get("thread_id")
+    if not thread_id:
+        raise ValueError("thread_id is required")
+
+    persist_docs_to_db(conn_factory(), thread_id, updates)
 
     emit_event(
         "changeset.applied",

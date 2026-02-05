@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
@@ -12,6 +13,8 @@ from app.db.get_conn_factory import conn_factory
 from app.db.lc_message_to_row import lc_message_to_row
 from app.db.fetch_thread_messages import fetch_thread_messages
 from app.agents.state.get_initial_state_update import get_initial_state_update
+from app.agents.state.empty_docs import empty_docs
+from app.db.persist_docs_to_db import persist_docs_to_db
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -36,6 +39,9 @@ async def api_chat(request: Request, thread_id: str):
         user_message = HumanMessage(content="I want to build a meme cat app")
 
         persist_messages_to_db(conn_factory(), thread_id, [lc_message_to_row(user_message)])
+
+        if is_new_thread: 
+            persist_docs_to_db(conn_factory(), thread_id, empty_docs)
 
         state_update = get_initial_state_update(is_new_thread, thread_id, user_message)
 
@@ -78,10 +84,6 @@ async def approve_changeset(thread_id: str, payload: ApprovalDecision):
         workflow = build_workflow()
         graph = workflow.compile(checkpointer=checkpointer)
         config = {"configurable": {"thread_id": thread_id}}
-
-        print("\n\n\n\n")
-        print(payload.decision)
-        print("\n\n\n\n")
 
         for namespace, mode, data in graph.stream(
             Command(resume={"decision": payload.decision}),

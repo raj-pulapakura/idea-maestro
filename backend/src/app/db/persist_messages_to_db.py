@@ -3,7 +3,11 @@ import json
 import psycopg
 
 
-def persist_messages_to_db(conn: psycopg.Connection, thread_id: str, messages: List[Dict[str, Any]]) -> Tuple[int, int]:
+def persist_messages_to_db(
+    conn: psycopg.Connection, 
+    thread_id: str, 
+    messages: List[Dict[str, Any]]
+) -> Tuple[int, int]:
     if not messages:
         raise ValueError("messages is empty")
 

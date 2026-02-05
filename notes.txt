@@ -108,6 +108,14 @@ create table if not exists chat_threads (
   next_seq bigint not null default 1
 );
 
+create table if not exists docs (
+  id bigserial primary key,
+  thread_id text not null,
+  doc_id text not null,
+  content text not null,
+  description text not null
+);
+
 *==
 
 sub-agent prompt structure
@@ -126,9 +134,13 @@ tool-use (global)
 
 
 
+
+
 next tasks:
 
 - persist docs
+  - current approach: SCD1, overwrite don't create new records
+  - future: add SCD2
 - fix message persistence for subagents
 - add the rest of the sub agents
 - build UI
