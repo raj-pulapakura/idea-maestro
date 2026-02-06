@@ -11,10 +11,10 @@ def append_history(old: list[Any] | None, new: list[Any] | None) -> list[Any]:
     """Accumulate history entries."""
     return (old or []) + (new or [])
 
-def append_proposed_edits(
-    old: list["ProposedEdit"] | None,
-    new: list["ProposedEdit"] | None,
-) -> list["ProposedEdit"]:
+def append_staged_edits(
+    old: list["StagedEdit"] | None,
+    new: list["StagedEdit"] | None,
+) -> list["StagedEdit"]:
     return (old or []) + (new or [])
 
 def merge_docs(
@@ -51,6 +51,26 @@ def set_pending_change_set(
     """
     return new
 
+def set_staged_edits_summary(
+    old: str | None,
+    new: str | None,
+) -> str | None:
+    """
+    'Last write wins' for staged_edits_summary.
+    If a node returns None, it will clear it.
+    """
+    return new
+
+def set_staged_edits_by(
+    old: str | None,
+    new: str | None,
+) -> str | None:
+    """
+    'Last write wins' for staged_edits_by.
+    If a node returns None, it will clear it.
+    """
+    return new
+
 
 # --- State ---
 
@@ -62,15 +82,15 @@ class Doc(TypedDict):
     updated_by: str
     updated_at: str
 
-class ProposedEdit(TypedDict):
+class StagedEdit(TypedDict):
     doc_id: str
-    new_content: str
+    new_content : str
 
 class ChangeSet(TypedDict):
     change_set_id: str
     created_by: str
     created_at: str
-    edits: list[ProposedEdit]
+    edits: list[StagedEdit]
     diffs: dict[str, str]
     summary: str
     status: str
@@ -82,7 +102,7 @@ class AgentState(TypedDict):
     history: Annotated[list[Any], append_history]
     docs: Annotated[dict[str, Doc], merge_docs]
     docs_summary: Annotated[dict[str, str], merge_docs_mental_model] # summary of the docs for the agent to use in the prompt, so we don't load the entire prompt into memory
-    proposed_edits: Annotated[list[ProposedEdit], append_proposed_edits]
-    proposal_summary: str
-    proposal_by: str
+    staged_edits: Annotated[list[StagedEdit], append_staged_edits]
+    staged_edits_summary: Annotated[str | None, set_staged_edits_summary]
+    staged_edits_by: Annotated[str | None, set_staged_edits_by]
     pending_change_set: Annotated[ChangeSet | None, set_pending_change_set]

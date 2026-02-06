@@ -10,7 +10,7 @@ from langgraph.checkpoint.memory import InMemorySaver, MemorySaver
 from langgraph.types import Command, interrupt
 import os
 
-from app.agents.main import build_workflow
+from app.agents.build_workflow import build_workflow
 
 model = init_chat_model(model="gpt-4o-mini", temperature=0.0)
 

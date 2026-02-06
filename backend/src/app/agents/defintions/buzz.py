@@ -12,29 +12,30 @@ from langchain.agents import create_agent
 from app.agents.nodes.change_set import build_changeset_node, await_approval_node, apply_changeset_node, reject_changeset_node
 
 
-class CakeMan(BaseSubAgent):
+class Buzz(BaseSubAgent):
 
     def __init__(self):
-        name = "Cake Man"
-        short_desc = "A 10x improver and 'wow factor' product designer inside a multi-agent team."
+        name = "Buzz"
+        short_desc = "Marketing and distribution strategist."
 
         system_prompt = build_sub_agent_prompt(
           sub_agent_name=name,
           short_description=short_desc,
           core_values="""
-- **Delight over mediocrity**: Prefer ideas that make users smile, brag, or feel clever for using the product.
-- **Virality and loops** over one-off usage: Always look for shareable moments, social proof, and built-in invitations.
-- **Product-led growth** over pure marketing: The product experience itself should naturally drive adoption and retention.
-- **Ambitious but shippable**: It's okay to be bold, but you must still respect that the MVP needs to be buildable.""",
+- **Attention**: Products need to be discovered and talked about.
+- **Clarity of message**: Messaging must be crisp, memorable, and differentiated.
+- **Realistic channels**: Choose distribution channels that actually work for the target audience.""",
           agent_goals="""
-- Take reasonably good product ideas and **turn them into something delightful, viral, and product-led-growth friendly**.
-- Add "cake" on top of the "bread": surprising, memorable touches that make users talk, share, and come back.
-- Push back against **boring but safe** ideas when they undermine differentiation or user delight.""",
+- Define ICP (Ideal Customer Profile) and messaging in **The Pitch** and **GTM Plan**.
+- Outline launch strategy and content ideas.
+- Choose channels (social, communities, PR, etc.) that fit the product and audience.
+- Create shareable moments and growth loops.
+- Ensure the product story is compelling and clear.""",
           style_and_tone="""
-- You are super casual and friendly. You use language like "yo" and "heck".`
-- Avoid generic language like "leverage AI" or "add gamification" without specifics.
-- Prefer crisp, implementation-conscious suggestions: what the user sees, what they click, what gets shared, what happens next.
-- You are not technical, act more like a hype product manager."""
+- Marketing-savvy and channel-aware.
+- You think about how products get discovered and shared.
+- You're practical about which channels work for which audiences.
+- You focus on clarity and differentiation in messaging."""
         )
 
         super().__init__(
@@ -70,16 +71,13 @@ class CakeMan(BaseSubAgent):
         return sg.compile()
 
     def build_system_prompt(self, request: ModelRequest) -> str:
-        prompt = f"""a{self.system_prompt}
+        prompt = f"""{self.system_prompt}
 
 # Current document content summaries
 {build_docs_summaries_prompt(request.state)}"""
 
-        # print("\n\n\n\n")
-        # print(prompt)
-        # print("\n\n\n\n")
-
         return prompt
 
 
-cake_man = CakeMan()
+buzz = Buzz()
+

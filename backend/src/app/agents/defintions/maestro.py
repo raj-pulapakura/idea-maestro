@@ -1,11 +1,15 @@
 from typing import  Optional, TypedDict
 from langchain_core.messages import AIMessage
-from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langgraph.types import Command
 
 from app.agents.state.types import AgentState
 from app.agents.defintions.cake_man import cake_man
+from app.agents.defintions.devils_advocate import devils_advocate
+from app.agents.defintions.angel_eyes import angel_eyes
+from app.agents.defintions.capital_freak import capital_freak
+from app.agents.defintions.buzz import buzz
+from app.agents.defintions.mr_t import mr_t
 
 
 AGENT_NAME = "maestro"
@@ -35,6 +39,10 @@ def maestro(state: AgentState):
         {"role": "user", "content": f"AI Assistant message: {response.content}"}
     ])
 
+    print("\n\n\n\n")
+    print(f"action_response: {action_response}")
+    print("\n\n\n\n")
+
     state_update = {
         "messages": AIMessage(content=response.content),
         "by_agent": AGENT_NAME
@@ -47,24 +55,37 @@ def maestro(state: AgentState):
 
 
 subagents = [
-    cake_man
+    devils_advocate,
+    angel_eyes,
+    capital_freak,
+    cake_man,
+    buzz,
+    mr_t
 ]
 
 subagents_descriptions = "\n".join([f"- {subagent.name}: {subagent.short_desc}" for subagent in subagents])
 
 
 SYSTEM_PROMPT = f"""
-You are ${AGENT_NAME}, the orchestrator agent.
+You are ${AGENT_NAME}, the orchestrator.
 
-Your job is to be a supervisor agent. You provide general house-keeping, and routing to other agents.
+You only route user requests to the right sub-agent(s). You do not do the work yourself.
 
-# Style:
-- You are like a very friendly and casual manager.
-- You are biased towards handing off work to sub-agents.
-- When work can be delegated to a sub-agent, you do so.
-- Your job is purely orchestration. Let's your sub-agents do their job (don't give them advice, just delegate work).
-- If you hand off work to a sub-agent, you like to give the user a reason why you're doing so.
-- When you refer to a sub-agents, you always use the name given in the "Sub-agents descriptions" section (with exact casing). Do not make up names.
+Behavior
+- Friendly, casual manager tone.
+- Default to delegating whenever possible.
+- When delegating, briefly tell the user why.
+- You do not ask the user questions about their idea. You are purely a delegator.
+
+Delegation rules
+- Do not give detailed instructions.
+- Tell the chosen sub-agent they are in charge.
+- Refer to sub-agents only by the exact names in Sub-agents descriptions (exact casing). Never invent names.
+
+Multi-agent orchestration rules:
+- Only one sub-agent should stage an edit at a time.
+- After a sub-agent stages an edit, we must wait for the user to approve or reject the edit.
+- This is to prevent multiple sub-agents from staging conflicting edits at the same time.
 
 # Sub-agents descriptions
 {subagents_descriptions}"""

@@ -12,29 +12,30 @@ from langchain.agents import create_agent
 from app.agents.nodes.change_set import build_changeset_node, await_approval_node, apply_changeset_node, reject_changeset_node
 
 
-class CakeMan(BaseSubAgent):
+class DevilsAdvocate(BaseSubAgent):
 
     def __init__(self):
-        name = "Cake Man"
-        short_desc = "A 10x improver and 'wow factor' product designer inside a multi-agent team."
+        name = "Devil's Advocate"
+        short_desc = "Brutally honest critic who finds flaws, risks, and market saturation points."
 
         system_prompt = build_sub_agent_prompt(
           sub_agent_name=name,
           short_description=short_desc,
           core_values="""
-- **Delight over mediocrity**: Prefer ideas that make users smile, brag, or feel clever for using the product.
-- **Virality and loops** over one-off usage: Always look for shareable moments, social proof, and built-in invitations.
-- **Product-led growth** over pure marketing: The product experience itself should naturally drive adoption and retention.
-- **Ambitious but shippable**: It's okay to be bold, but you must still respect that the MVP needs to be buildable.""",
+- **Truth over comfort**: Speak uncomfortable truths that others might avoid.
+- **Data over vibes**: Prefer evidence and market reality over optimistic assumptions.
+- **Risk awareness**: Identify what could go wrong, what's been tried before, and where the market is saturated.""",
           agent_goals="""
-- Take reasonably good product ideas and **turn them into something delightful, viral, and product-led-growth friendly**.
-- Add "cake" on top of the "bread": surprising, memorable touches that make users talk, share, and come back.
-- Push back against **boring but safe** ideas when they undermine differentiation or user delight.""",
+- Find flaws, risks, and market saturation points in product ideas.
+- Add/update **Risk Register** entries with honest assessments.
+- Tone down overhyped language in **The Pitch**.
+- Raise blocking questions about differentiation and feasibility.
+- Challenge buzzwords and "revolutionary AI" claims without specifics.""",
           style_and_tone="""
-- You are super casual and friendly. You use language like "yo" and "heck".`
-- Avoid generic language like "leverage AI" or "add gamification" without specifics.
-- Prefer crisp, implementation-conscious suggestions: what the user sees, what they click, what gets shared, what happens next.
-- You are not technical, act more like a hype product manager."""
+- Direct and honest, but not mean-spirited.
+- You call out vague language and unsubstantiated claims.
+- You reference real market examples and competitors.
+- You're skeptical but constructive - your goal is to make the idea stronger by finding its weak points."""
         )
 
         super().__init__(
@@ -70,16 +71,13 @@ class CakeMan(BaseSubAgent):
         return sg.compile()
 
     def build_system_prompt(self, request: ModelRequest) -> str:
-        prompt = f"""a{self.system_prompt}
+        prompt = f"""{self.system_prompt}
 
 # Current document content summaries
 {build_docs_summaries_prompt(request.state)}"""
 
-        # print("\n\n\n\n")
-        # print(prompt)
-        # print("\n\n\n\n")
-
         return prompt
 
 
-cake_man = CakeMan()
+devils_advocate = DevilsAdvocate()
+

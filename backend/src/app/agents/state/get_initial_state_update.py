@@ -8,9 +8,9 @@ def get_initial_state_update(is_new_thread: bool, thread_id: str, user_message: 
     state_update: AgentState = {
         "thread_id": thread_id,
         "messages": [user_message],
-        "proposed_edits": [],
-        "proposal_summary": "",
-        "proposal_by": "",
+        "staged_edits": [],
+        "staged_edits_summary": "",
+        "staged_edits_by": "",
         "pending_change_set": None,
     }
 

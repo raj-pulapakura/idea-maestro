@@ -7,7 +7,7 @@ import uuid
 from langgraph.types import Command, interrupt
 
 from app.agents.helpers.emit_event import emit_event
-from app.agents.state.types import AgentState, ChangeSet, ProposedEdit, Doc
+from app.agents.state.types import AgentState, ChangeSet, StagedEdit, Doc
 from app.db.get_conn_factory import conn_factory
 from app.db.persist_docs_to_db import persist_docs_to_db
 
@@ -17,7 +17,7 @@ def _now_iso() -> str:
 
 
 def build_changeset_node(state: AgentState) -> dict:
-    edits = state.get("proposed_edits", [])
+    edits = state.get("staged_edits", [])
     if not edits:
         return {}
 
@@ -26,7 +26,7 @@ def build_changeset_node(state: AgentState) -> dict:
         latest_by_doc[edit["doc_id"]] = edit["new_content"]
 
     diffs: dict[str, str] = {}
-    finalized_edits: list[ProposedEdit] = []
+    finalized_edits: list[StagedEdit] = []
 
     for doc_id, new_content in latest_by_doc.items():
         old_content = state.get("docs", {}).get(doc_id, {}).get("content", "")
@@ -42,12 +42,12 @@ def build_changeset_node(state: AgentState) -> dict:
         finalized_edits.append({"doc_id": doc_id, "new_content": new_content})
 
     cs_id = str(uuid.uuid4())
-    created_by = state.get("proposal_by") or "agent"
+    created_by = state.get("staged_edits_by") or "agent"
     changeset: ChangeSet = {
         "change_set_id": cs_id,
         "created_by": created_by,
         "created_at": _now_iso(),
-        "summary": state.get("proposal_summary", ""),
+        "summary": state.get("staged_edits_summary", ""),
         "edits": finalized_edits,
         "diffs": diffs,
         "status": "pending",
@@ -65,9 +65,9 @@ def build_changeset_node(state: AgentState) -> dict:
 
     return {
         "pending_change_set": changeset,
-        "proposed_edits": [],
-        "proposal_summary": "",
-        "proposal_by": "",
+        "staged_edits": [],
+        "staged_edits_summary": "",
+        "staged_edits_by": "",
     }
 
 
@@ -103,7 +103,7 @@ def apply_changeset_node(state: AgentState) -> dict:
 
     updates: dict[str, Doc] = {}
     docs = state.get("docs", {})
-    for edit in cs["edits"]:
+    for edit in cs["staged_edits"]:
         doc_id = edit["doc_id"]
         old = docs.get(doc_id)
         if not old:
@@ -111,7 +111,7 @@ def apply_changeset_node(state: AgentState) -> dict:
 
         new_doc = dict(old)
         new_doc["content"] = edit["new_content"]
-        new_doc["description"] = cs.get("summary", "")
+        new_doc["description"] = cs.get("staged_edits_summary", "")
         new_doc["updated_by"] = cs.get("created_by", "agent")
         new_doc["updated_at"] = _now_iso()
         updates[doc_id] = new_doc

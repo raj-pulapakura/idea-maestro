@@ -1,4 +1,3 @@
-from app.agents.prompts.tool_use import TOOL_USE
 from app.agents.prompts.shared_documents import SHARED_DOCUMENTS
 from app.agents.prompts.personality_guidance import PERSONALITY_GUIDANCE
 
@@ -26,7 +25,4 @@ The following information is shared by all agents in the system:
 {PERSONALITY_GUIDANCE}
 
 # Shared Documents
-{SHARED_DOCUMENTS}
-
-# Tool Use
-{TOOL_USE}"""
+{SHARED_DOCUMENTS}"""
