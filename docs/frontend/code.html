@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Idea Maestro Main Workspace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1919e6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111121",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex h-14 items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-50">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">lightbulb</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold tracking-tight">Idea Maestro</h2>
+</div>
+<div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+<div class="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-lg">folder_open</span>
+<span>Project: NextGen SaaS</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg text-sm font-semibold transition-colors">
+<span class="material-symbols-outlined text-lg">pause_circle</span>
+<span>Pause Agents</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 rounded-lg text-sm font-semibold transition-colors">
+<span class="material-symbols-outlined text-lg">settings</span>
+<span>Settings</span>
+</button>
+<div class="size-8 rounded-full bg-slate-200 border border-slate-300 bg-cover bg-center" data-alt="User avatar placeholder" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBmGgDK6GDH3l462yQgLJaQpuxizuxm6sIoEDKa9WaioKyRn8TK6zOi0FFeU8uT9aQKkxv0VAJCCc7NZZ6sRnvYBWIf5tM9BM-PMMEEAq8ju1b5aDkrZk0r5zlQb2wWAECvThbLBfczQzXm1V32Da3xRTtficdVpP2ZPEIOntDxixIJltt1sKgn-fqn_1qdjn0Jwdh6ENPbdV5RnhY4KKUf1_O5G5j41FbshciLCgKKTDx-KspRajd3a7FxaPemR-1AGKTRRMH-A2A')"></div>
+</div>
+</header>
+<main class="flex flex-1 overflow-hidden">
+<!-- Left Column: Sessions -->
+<aside class="w-72 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+<div class="p-4 space-y-4">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-lg font-bold text-sm shadow-sm hover:shadow-md transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+<span>New Session</span>
+</button>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Search sessions..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
+<div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 py-2">Active Workspaces</div>
+<div class="group flex flex-col gap-1 p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="text-sm font-semibold text-slate-900 dark:text-white truncate">Solo Founder AI PM</span>
+<span class="flex size-2 rounded-full bg-emerald-500"></span>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<div class="flex -space-x-1.5">
+<div class="size-5 rounded-full border-2 border-white dark:border-slate-800 bg-orange-500 flex items-center justify-center text-[10px] text-white font-bold" title="Devil's Advocate">D</div>
+<div class="size-5 rounded-full border-2 border-white dark:border-slate-800 bg-teal-500 flex items-center justify-center text-[10px] text-white font-bold" title="Angel Eyes">A</div>
+<div class="size-5 rounded-full border-2 border-white dark:border-slate-800 bg-primary flex items-center justify-center text-[10px] text-white font-bold" title="SaaS Architect">S</div>
+</div>
+<span class="text-[11px] text-slate-500 font-medium">Drafting Pitch</span>
+</div>
+</div>
+<div class="group flex flex-col gap-1 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-transparent">
+<div class="flex justify-between items-start">
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">E-commerce Engine</span>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-[10px] font-bold uppercase">Technical Spec</span>
+</div>
+</div>
+<div class="group flex flex-col gap-1 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-transparent">
+<div class="flex justify-between items-start">
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">SaaS Roadmap</span>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold uppercase">Reviewing</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Center Column: Main Chat -->
+<section class="flex-1 flex flex-col bg-white dark:bg-slate-900 relative">
+<header class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+<div>
+<h1 class="text-lg font-bold text-slate-900 dark:text-white">Agent Workspace</h1>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="size-2 rounded-full bg-emerald-500"></span>
+<span class="text-xs text-slate-500">5 agents active &amp; collaborating</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+<!-- Message 1 -->
+<div class="flex gap-4">
+<div class="size-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shrink-0 font-bold shadow-sm">DA</div>
+<div class="space-y-1.5 max-w-2xl">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Devil's Advocate</span>
+<span class="text-[11px] text-slate-400 font-medium">10:42 AM</span>
+</div>
+<div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl rounded-tl-none border border-slate-100 dark:border-slate-700 text-[15px] leading-relaxed">
+                            The current monetization model seems too aggressive for the target demographic. Have we considered that a $49/mo starting price might alienate the solo founders you're targeting?
+                            <div class="mt-3 flex gap-2">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-bold rounded">
+<span class="material-symbols-outlined text-sm">warning</span>
+                                    Flagged: Risk-04
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Message 2 -->
+<div class="flex gap-4">
+<div class="size-10 rounded-xl bg-teal-500 flex items-center justify-center text-white shrink-0 font-bold shadow-sm">AE</div>
+<div class="space-y-1.5 max-w-2xl">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Angel Eyes</span>
+<span class="text-[11px] text-slate-400 font-medium">10:43 AM</span>
+</div>
+<div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl rounded-tl-none border border-slate-100 dark:border-slate-700 text-[15px] leading-relaxed">
+                            I agree with the concern. A freemium tier would lower the barrier to entry significantly and allow for viral growth. I've prepared a revised pricing structure.
+                            <div class="mt-3 flex flex-wrap gap-2">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 text-xs font-bold rounded">
+<span class="material-symbols-outlined text-sm">auto_fix_high</span>
+                                    proposed: 2 diffs in The Pitch
+                                </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded">
+<span class="material-symbols-outlined text-sm">article</span>
+                                    updated: Risk Register
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Typing indicator -->
+<div class="flex items-center gap-3">
+<div class="flex space-x-1">
+<div class="size-1.5 bg-slate-300 dark:bg-slate-600 rounded-full animate-pulse"></div>
+<div class="size-1.5 bg-slate-300 dark:bg-slate-600 rounded-full animate-pulse [animation-delay:0.2s]"></div>
+<div class="size-1.5 bg-slate-300 dark:bg-slate-600 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+</div>
+<span class="text-xs text-slate-400 italic">SaaS Architect is thinking...</span>
+</div>
+</div>
+<!-- Composer Area -->
+<div class="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+<div class="relative">
+<!-- Dropdown Mentions Overlay -->
+<div class="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden z-20">
+<div class="p-2 border-b border-slate-100 dark:border-slate-700 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50">Mention Agent</div>
+<div class="max-h-48 overflow-y-auto">
+<div class="flex items-center gap-3 px-4 py-2 hover:bg-primary/5 cursor-pointer border-l-2 border-transparent hover:border-primary transition-all">
+<div class="size-6 rounded bg-teal-500 flex items-center justify-center text-[10px] text-white font-bold">AE</div>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Angel Eyes</span>
+<span class="ml-auto text-[10px] text-slate-400 font-medium italic">Constructive</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 bg-primary/5 border-l-2 border-primary cursor-pointer">
+<div class="size-6 rounded bg-orange-500 flex items-center justify-center text-[10px] text-white font-bold">DA</div>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Devil's Advocate</span>
+<span class="ml-auto text-[10px] text-slate-400 font-medium italic">Critical</span>
+</div>
+</div>
+</div>
+<div class="rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all bg-white dark:bg-slate-800">
+<div class="flex items-center gap-1 p-2 border-b border-slate-100 dark:border-slate-700">
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-500"><span class="material-symbols-outlined text-lg">format_bold</span></button>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-500"><span class="material-symbols-outlined text-lg">format_italic</span></button>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-500"><span class="material-symbols-outlined text-lg">link</span></button>
+<div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-500"><span class="material-symbols-outlined text-lg">alternate_email</span></button>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-500"><span class="material-symbols-outlined text-lg">tag</span></button>
+</div>
+<div class="px-4 py-3">
+<div class="text-[15px] outline-none min-h-[60px]" contenteditable="true">
+                                @Devil's Advocate can you look at the 
+                                <span class="text-primary font-semibold">#Risk Register</span> 
+                                and tell me if we've addressed the churn concerns?
+                            </div>
+</div>
+<div class="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-900/50 rounded-b-xl border-t border-slate-100 dark:border-slate-700">
+<span class="text-[11px] text-slate-400 font-medium">Cmd + Enter to send</span>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-500 transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<button class="bg-primary text-white p-2 rounded-lg hover:shadow-lg transition-all flex items-center justify-center">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Living Documents -->
+<aside class="w-80 flex flex-col border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+<header class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h2 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Living Documents</h2>
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full">3 Active</span>
+</header>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+<!-- Document 1 (Expanded) -->
+<div class="space-y-3">
+<div class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400">description</span>
+<span class="text-sm font-bold text-slate-900 dark:text-white">The Pitch (v7)</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:rotate-180 transition-transform">expand_more</span>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm space-y-4">
+<div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-primary uppercase">Current Draft</span>
+<span class="text-[11px] text-slate-400">Updated 2m ago by Angel Eyes</span>
+</div>
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400"><span class="material-symbols-outlined text-lg">fullscreen</span></button>
+</div>
+<div class="prose prose-slate dark:prose-invert prose-sm">
+<h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">3. Monetization Strategy</h3>
+<p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
+                                Our platform employs a hybrid freemium/SaaS model designed to maximize adoption while ensuring sustainable high-value revenue.
+                            </p>
+<ul class="list-disc pl-4 space-y-2 mt-2">
+<li class="text-xs text-slate-600 dark:text-slate-400">
+<span class="font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1 rounded">Freemium Tier:</span> Access to 1 active agent and basic roadmap exports.
+                                </li>
+<li class="text-xs text-slate-600 dark:text-slate-400">
+<span class="font-semibold">Pro Tier ($29/mo):</span> Full agent workspace + live diffing.
+                                </li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Document 2 (Collapsed) -->
+<div class="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-amber-500/10 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">fact_check</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-900 dark:text-white">Risk Register (v4)</span>
+<span class="text-[10px] text-slate-400">Last updated yesterday</span>
+</div>
+</div>
+</div>
+<!-- Document 3 (Collapsed) -->
+<div class="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">data_object</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-900 dark:text-white">Technical Architecture</span>
+<span class="text-[10px] text-slate-400">Initial draft</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<button class="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-slate-300 dark:border-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg text-xs font-semibold transition-all">
+<span class="material-symbols-outlined text-sm">upload_file</span>
+<span>Upload Resource</span>
+</button>
+</div>
+</aside>
+</main>
+</body></html>

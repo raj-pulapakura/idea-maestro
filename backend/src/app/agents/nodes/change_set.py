@@ -103,7 +103,7 @@ def apply_changeset_node(state: AgentState) -> dict:
 
     updates: dict[str, Doc] = {}
     docs = state.get("docs", {})
-    for edit in cs["staged_edits"]:
+    for edit in cs["edits"]:
         doc_id = edit["doc_id"]
         old = docs.get(doc_id)
         if not old:
@@ -111,7 +111,7 @@ def apply_changeset_node(state: AgentState) -> dict:
 
         new_doc = dict(old)
         new_doc["content"] = edit["new_content"]
-        new_doc["description"] = cs.get("staged_edits_summary", "")
+        new_doc["description"] = cs.get("summary", "")
         new_doc["updated_by"] = cs.get("created_by", "agent")
         new_doc["updated_at"] = _now_iso()
         updates[doc_id] = new_doc

@@ -138,9 +138,10 @@ tool-use (global)
 
 next tasks:
 
-- persist docs
+- persist docs (done)
   - current approach: SCD1, overwrite don't create new records
   - future: add SCD2
 - fix message persistence for subagents
 - add the rest of the sub agents
+- update docs summaries whenever docs are approved
 - build UI
