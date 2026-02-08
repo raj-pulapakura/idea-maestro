@@ -1,32 +1,27 @@
-from typing import Dict, TypedDict
+from __future__ import annotations
+
+from typing import Dict, Optional, TypedDict
 
 import psycopg
 
 
-class PersistedDoc(TypedDict):
+class PersistedDoc(TypedDict, total=False):
+    title: str
     content: str
     description: str
+    version: int
+    updated_by: Optional[str]
+    updated_at: Optional[str]
 
 
 def persist_docs_to_db(
     conn: psycopg.Connection,
     thread_id: str,
     docs: Dict[str, PersistedDoc],
+    *,
+    change_set_id: str | None = None,
+    summary: str = "",
 ) -> int:
-    """
-    Persist docs for a thread into the `docs` table (SCD1 style: overwrite in place).
-
-    Expects `docs` to be a mapping of doc_id -> { "content": str, "description": str, ... }.
-
-    DDL reference (see notes.txt:111-117):
-        create table if not exists docs (
-          id bigserial primary key,
-          thread_id text not null,
-          doc_id text not null,
-          content text not null,
-          description text not null
-        );
-    """
     if not docs:
         raise ValueError("docs is empty")
 
@@ -35,36 +30,124 @@ def persist_docs_to_db(
             for doc_id, payload in docs.items():
                 try:
                     content = payload["content"]
-                    description = payload["description"]
+                    description = payload.get("description", "")
                 except KeyError as e:
                     raise KeyError(f"doc {doc_id!r} is missing required field {e.args[0]!r}") from e
 
-                # First try to update an existing row for (thread_id, doc_id)
+                title = payload.get("title", doc_id.replace("_", " ").title())
+                updated_by = payload.get("updated_by")
+                updated_at = payload.get("updated_at")
+
                 cur.execute(
                     """
-                    UPDATE docs
-                    SET content = %s,
-                        description = %s
-                    WHERE thread_id = %s
-                      AND doc_id = %s;
+                    SELECT content, version
+                    FROM docs
+                    WHERE thread_id = %s AND doc_id = %s
                     """,
-                    (content, description, thread_id, doc_id),
+                    (thread_id, doc_id),
                 )
+                existing = cur.fetchone()
 
-                # If no row was updated, insert a new one
-                if cur.rowcount == 0:
+                if existing:
+                    old_content, old_version = existing
+                    content_changed = old_content != content
+                    next_version = old_version + 1 if content_changed else old_version
                     cur.execute(
                         """
-                        INSERT INTO docs (
-                          thread_id,
-                          doc_id,
-                          content,
-                          description
-                        ) VALUES (%s, %s, %s, %s);
+                        UPDATE docs
+                        SET
+                          title = %s,
+                          content = %s,
+                          description = %s,
+                          version = %s,
+                          updated_by = %s,
+                          updated_at = COALESCE(%s::timestamptz, NOW())
+                        WHERE thread_id = %s AND doc_id = %s
                         """,
-                        (thread_id, doc_id, content, description),
+                        (
+                            title,
+                            content,
+                            description,
+                            next_version,
+                            updated_by,
+                            updated_at,
+                            thread_id,
+                            doc_id,
+                        ),
                     )
 
-    return len(docs)
+                    if content_changed:
+                        cur.execute(
+                            """
+                            INSERT INTO doc_versions (
+                              thread_id,
+                              doc_id,
+                              version,
+                              content,
+                              summary,
+                              updated_by,
+                              change_set_id
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            """,
+                            (
+                                thread_id,
+                                doc_id,
+                                next_version,
+                                content,
+                                summary,
+                                updated_by,
+                                change_set_id,
+                            ),
+                        )
+                    continue
 
+                initial_version = payload.get("version", 1)
+                cur.execute(
+                    """
+                    INSERT INTO docs (
+                      thread_id,
+                      doc_id,
+                      title,
+                      content,
+                      description,
+                      version,
+                      updated_by,
+                      updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, COALESCE(%s::timestamptz, NOW()))
+                    """,
+                    (
+                        thread_id,
+                        doc_id,
+                        title,
+                        content,
+                        description,
+                        initial_version,
+                        updated_by,
+                        updated_at,
+                    ),
+                )
+                cur.execute(
+                    """
+                    INSERT INTO doc_versions (
+                      thread_id,
+                      doc_id,
+                      version,
+                      content,
+                      summary,
+                      updated_by,
+                      change_set_id
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        thread_id,
+                        doc_id,
+                        initial_version,
+                        content,
+                        summary,
+                        updated_by,
+                        change_set_id,
+                    ),
+                )
+
+    return len(docs)
 

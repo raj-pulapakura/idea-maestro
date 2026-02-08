@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS checkpoint_writes CASCADE;
+DROP TABLE IF EXISTS checkpoint_blobs CASCADE;
+DROP TABLE IF EXISTS checkpoints CASCADE;
+DROP TABLE IF EXISTS checkpoint_migrations CASCADE;

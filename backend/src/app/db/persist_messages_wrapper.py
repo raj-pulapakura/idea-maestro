@@ -49,9 +49,10 @@ def persist_messages_wrapper(
 
         rows = [lc_message_to_row(m, by_agent) for m in new_msgs]
         thread_id = state["thread_id"]
+        run_id = state.get("run_id")
 
         with conn_factory() as conn:
-            persist_messages_to_db(conn, thread_id, rows)
+            persist_messages_to_db(conn, thread_id, rows, run_id=run_id)
 
         return out
 

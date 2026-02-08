@@ -1,8 +1,8 @@
 from fastapi import Request
 from langgraph.checkpoint.postgres import PostgresSaver
-import os
+from app.db.checkpoint import checkpoint_db_url
 
-DB_URL = os.getenv("DATABASE_URL") + "?sslmode=disable"
+DB_URL = checkpoint_db_url()
 
 def checkpointer_route_decorator(func):
     """

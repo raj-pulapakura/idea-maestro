@@ -19,7 +19,6 @@ def build_workflow() -> StateGraph:
 
     workflow.add_node("maestro", persist_messages_wrapper(maestro, conn_factory=conn_factory))
     workflow.add_edge(START, "maestro")
-    workflow.add_edge("maestro", END)
 
     # Add all subagents
     subagents = [
@@ -33,5 +32,42 @@ def build_workflow() -> StateGraph:
 
     for subagent in subagents:
         workflow.add_node(subagent.name, subagent.build_subgraph())
+        workflow.add_edge(subagent.name, END)
+
+    route_map = {
+        subagent.name: subagent.name for subagent in subagents
+    }
+    route_map["__end__"] = END
+
+    normalized_route_map = {
+        name.strip()
+        .lower()
+        .replace("’", "'")
+        .replace("‘", "'")
+        .replace("`", "'")
+        .replace("_", " "): name
+        for name in route_map
+        if name != "__end__"
+    }
+
+    def route_from_maestro(state: AgentState) -> str:
+        target = state.get("next_agent")
+        if isinstance(target, str):
+            if target in route_map:
+                return target
+            normalized_target = (
+                target.strip()
+                .lower()
+                .replace("’", "'")
+                .replace("‘", "'")
+                .replace("`", "'")
+                .replace("_", " ")
+            )
+            mapped = normalized_route_map.get(normalized_target)
+            if mapped:
+                return mapped
+        return "__end__"
+
+    workflow.add_conditional_edges("maestro", route_from_maestro, route_map)
 
     return workflow

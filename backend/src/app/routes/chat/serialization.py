@@ -1,4 +1,6 @@
 import json
+import re
+from ast import literal_eval
 from typing import Any, Optional
 
 from langchain_core.messages import BaseMessage
@@ -89,11 +91,17 @@ def guess_agent_from_namespace(namespace: Any) -> Optional[str]:
     canonical_by_key = {
         "maestro": "maestro",
         "devil's advocate": "Devil's Advocate",
+        "devils_advocate": "Devil's Advocate",
+        "devils advocate": "Devil's Advocate",
         "angel eyes": "Angel Eyes",
+        "angel_eyes": "Angel Eyes",
         "capital freak": "Capital Freak",
+        "capital_freak": "Capital Freak",
         "cake man": "Cake Man",
+        "cake_man": "Cake Man",
         "buzz": "Buzz",
         "mr. t": "Mr. T",
+        "mr_t": "Mr. T",
     }
 
     strings: list[str] = []
@@ -121,13 +129,60 @@ def find_approval_interrupt(updates: dict[str, Any]) -> Optional[dict[str, Any]]
     if raw_interrupt is None:
         return None
 
+    def normalize_approval_payload(value: Any, interrupt_id: Any = None) -> Optional[dict[str, Any]]:
+        if not isinstance(value, dict):
+            return None
+        if value.get("type") != "approval_required":
+            return None
+        payload = make_json_serializable(value)
+        if isinstance(interrupt_id, str) and interrupt_id:
+            payload["interrupt_id"] = interrupt_id
+        return payload
+
+    def parse_interrupt_repr(text: str) -> Optional[dict[str, Any]]:
+        # Fallback for LangGraph Interrupt repr strings:
+        # "Interrupt(value={...}, id='abc123')"
+        if not text.startswith("Interrupt("):
+            return None
+        match = re.search(r"Interrupt\(value=(.*),\s*id='([^']+)'\)$", text, flags=re.DOTALL)
+        if not match:
+            return None
+        value_expr, interrupt_id = match.group(1), match.group(2)
+        try:
+            parsed = literal_eval(value_expr)
+        except (SyntaxError, ValueError):
+            return None
+        return normalize_approval_payload(parsed, interrupt_id)
+
     candidates = raw_interrupt if isinstance(raw_interrupt, list) else [raw_interrupt]
     for candidate in candidates:
-        if isinstance(candidate, dict):
-            value = candidate.get("value", candidate)
-            if isinstance(value, dict) and value.get("type") == "approval_required":
-                return value
-            if candidate.get("type") == "approval_required":
-                return candidate
+        candidate_value = getattr(candidate, "value", None)
+        candidate_id = getattr(candidate, "id", None) or getattr(candidate, "interrupt_id", None)
+        payload = normalize_approval_payload(candidate_value, candidate_id)
+        if payload:
+            return payload
 
-    return {"type": "approval_required", "value": make_json_serializable(raw_interrupt)}
+        if isinstance(candidate, dict):
+            interrupt_id = candidate.get("id") or candidate.get("interrupt_id")
+            value = candidate.get("value", candidate)
+            payload = normalize_approval_payload(value, interrupt_id)
+            if payload:
+                return payload
+            payload = normalize_approval_payload(candidate, interrupt_id)
+            if payload:
+                return payload
+
+        if isinstance(candidate, str):
+            payload = parse_interrupt_repr(candidate)
+            if payload:
+                return payload
+
+    serialized_interrupt = make_json_serializable(raw_interrupt)
+    if isinstance(serialized_interrupt, list):
+        for entry in serialized_interrupt:
+            if isinstance(entry, str):
+                payload = parse_interrupt_repr(entry)
+                if payload:
+                    return payload
+
+    return {"type": "approval_required", "value": serialized_interrupt}

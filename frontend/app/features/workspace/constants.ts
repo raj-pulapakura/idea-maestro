@@ -9,3 +9,4 @@ export const AGENT_COLOR: Record<string, string> = {
 };
 
 export const THREAD_STORAGE_KEY = "idea-maestro-thread-id";
+export const PANEL_PREFS_STORAGE_KEY = "idea-maestro-panel-prefs";

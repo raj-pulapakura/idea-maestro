@@ -8,9 +8,9 @@ from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.checkpoint.memory import InMemorySaver, MemorySaver
 from langgraph.types import Command, interrupt
-import os
 
 from app.agents.build_workflow import build_workflow
+from app.db.checkpoint import checkpoint_db_url
 
 model = init_chat_model(model="gpt-4o-mini", temperature=0.0)
 
@@ -44,7 +44,7 @@ def make_edit(state: State) -> State:
 def cancel(state: State) -> State:
     return {"document": state["document"]}
 
-DB_URL = os.getenv("DATABASE_URL") + "?sslmode=disable"
+DB_URL = checkpoint_db_url()
 print(DB_URL)
 
 

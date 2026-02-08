@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Idea Maestro - Diff &amp; Approval View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1919e6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111121",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .diff-added { background-color: rgba(34, 197, 94, 0.15); text-decoration: none; border-bottom: 2px solid #22c55e; }
+        .diff-removed { background-color: rgba(239, 68, 68, 0.15); text-decoration: line-through; border-bottom: 2px solid #ef4444; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Left Panel: Collapsed Sidebar -->
+<aside class="w-16 flex flex-col items-center py-6 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-20">
+<div class="mb-8">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">lightbulb</span>
+</div>
+</div>
+<nav class="flex flex-col gap-6">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">dashboard</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">work</span>
+</button>
+<button class="p-2 text-primary bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined">description</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chat</span>
+</button>
+<div class="h-px w-8 bg-slate-200 dark:bg-slate-800"></div>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</nav>
+<div class="mt-auto">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+<img alt="Profile" data-alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAR9pVor4JmDybWOnRUj_6mseM8YMmfDplPyfT2HGKsz9qTcp23fqd3DGiinxXhjqgC4vfY2aN2WpkMR8LekaA1c_np703wofUjZecVLA2goeLLuex6vyi3cfvjc9BEwbeeIyxWKcc9g1_f1EFT-QlNrNcv_K09Fjw04QYLSX1HRpMnI8x3gC8WufgAC_46qqsg5afZw9K1nVnM4x7aVGxi2AnB1n5y4PfGA5CWLHwptrs9brJC0XU8QmhDQdADMaItK5q7u5Qfk3E"/>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- Top Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 flex items-center justify-between z-10">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+<span>Projects</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span>SaaS Launch</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-slate-900 dark:text-white font-semibold">The Pitch - Diff View</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex -space-x-2">
+<div class="size-8 rounded-full border-2 border-white dark:border-slate-900 bg-blue-500 flex items-center justify-center text-[10px] text-white font-bold" title="Capital Freak">CF</div>
+<div class="size-8 rounded-full border-2 border-white dark:border-slate-900 bg-orange-500 flex items-center justify-center text-[10px] text-white font-bold" title="Mr. T">MT</div>
+<div class="size-8 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] text-slate-600 dark:text-slate-300">+2</div>
+</div>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-lg">
+<span class="material-symbols-outlined text-sm">share</span>
+                        Share
+                    </button>
+</div>
+</header>
+<div class="flex-1 flex overflow-hidden">
+<!-- Center Panel: Chat/Proposal Feed -->
+<section class="w-80 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+<div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<h3 class="font-semibold text-sm">Project Feed</h3>
+</div>
+<div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar">
+<!-- Diff Proposal Message -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-2 mb-3">
+<div class="size-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">CF</div>
+<div>
+<p class="text-xs font-bold">Capital Freak</p>
+<p class="text-[10px] text-slate-500">Proposed 12m ago</p>
+</div>
+</div>
+<div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-3 mb-4">
+<p class="text-sm font-medium text-primary mb-1">Diff Proposal: v7</p>
+<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                    Tightened pricing tiers for better unit economics. Removed the 'Free' tier overhead and introduced a developer-first entry point.
+                                </p>
+</div>
+<button class="w-full py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-primary/20">
+                                Quick Approve
+                            </button>
+</div>
+<!-- Previous Message -->
+<div class="flex gap-3">
+<div class="size-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold shrink-0">MT</div>
+<div class="bg-slate-200/50 dark:bg-slate-800 p-3 rounded-lg rounded-tl-none">
+<p class="text-xs text-slate-600 dark:text-slate-400 mb-1">I'm worried about the conversion impact. Can we see the LTV projections?</p>
+<p class="text-[10px] text-slate-400">14m ago</p>
+</div>
+</div>
+</div>
+<div class="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+<div class="relative">
+<input class="w-full pl-4 pr-10 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-1 focus:ring-primary" placeholder="Type a message..." type="text"/>
+<button class="absolute right-2 top-1.5 text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Right Panel: Diff Mode -->
+<section class="flex-1 flex flex-col bg-white dark:bg-slate-900 relative">
+<!-- Diff Controls -->
+<div class="h-14 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6">
+<div class="flex items-center gap-6">
+<h2 class="text-lg font-bold">The Pitch</h2>
+<div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+<button class="px-3 py-1 text-xs font-medium rounded-md bg-white dark:bg-slate-700 shadow-sm">Side-by-Side</button>
+<button class="px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400">Unified</button>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs font-medium text-slate-500">
+<span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-100 border border-red-500 rounded-sm"></span> 12 deletions</span>
+<span class="flex items-center gap-1"><span class="w-3 h-3 bg-green-100 border border-green-500 rounded-sm"></span> 18 additions</span>
+</div>
+</div>
+<!-- Diff Comparison -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Version 6 (Before) -->
+<div class="flex-1 border-r border-slate-100 dark:border-slate-800 flex flex-col">
+<div class="bg-red-50 dark:bg-red-900/20 px-4 py-2 border-b border-red-100 dark:border-red-900/30 flex items-center justify-between">
+<span class="text-[10px] font-bold text-red-600 uppercase tracking-wider">Before - v6</span>
+<span class="text-[10px] text-red-500">Draft by AI</span>
+</div>
+<div class="flex-1 p-8 overflow-y-auto custom-scrollbar leading-relaxed">
+<h1 class="text-3xl font-bold mb-6">Executive Summary</h1>
+<p class="mb-4">Our platform aims to democratize project management through AI agents. The initial strategy focused on <span class="diff-removed">offering a free forever tier to capture maximum market share</span> in the first quarter of operations.</p>
+<h2 class="text-xl font-bold mb-3 mt-8">Revenue Model</h2>
+<p class="mb-4">The core revenue comes from the enterprise subscription. <span class="diff-removed">Pricing will start at $9/user/month for the basic team plan, which includes up to 5 AI agents and unlimited storage.</span></p>
+<p class="mb-4">We expect a 15% conversion rate from free to paid users within the first six months based on industry benchmarks in the SaaS productivity space.</p>
+</div>
+</div>
+<!-- Version 7 (After) -->
+<div class="flex-1 flex flex-col bg-slate-50/30 dark:bg-slate-900/50">
+<div class="bg-green-50 dark:bg-green-900/20 px-4 py-2 border-b border-green-100 dark:border-green-900/30 flex items-center justify-between">
+<span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">After - v7</span>
+<span class="text-[10px] text-green-500 font-medium">Updated by Capital Freak</span>
+</div>
+<div class="flex-1 p-8 overflow-y-auto custom-scrollbar leading-relaxed">
+<h1 class="text-3xl font-bold mb-6">Executive Summary</h1>
+<p class="mb-4">Our platform aims to democratize project management through AI agents. The initial strategy focused on <span class="diff-added">targeting high-value engineering teams with a 'Pay-as-you-Scale' model</span> in the first quarter of operations.</p>
+<h2 class="text-xl font-bold mb-3 mt-8">Revenue Model</h2>
+<p class="mb-4">The core revenue comes from the enterprise subscription. <span class="diff-added">Pricing will now start at $29/seat with a focus on 'Advanced Orchestration' features. This includes a usage-based credit system for specialized AI workflows.</span></p>
+<p class="mb-4">We expect a 15% conversion rate from <span class="diff-added">Developer to Pro</span> users within the first six months based on industry benchmarks in the SaaS productivity space.</p>
+<p class="diff-added p-2 rounded-lg">By eliminating the free tier, we drastically reduce our server overhead and improve our gross margins from 65% to 82%.</p>
+</div>
+</div>
+</div>
+<!-- Clarifying Questions Queue -->
+<div class="absolute bottom-24 right-6 w-80 z-20">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+<div class="px-4 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+<span class="text-[10px] font-bold text-slate-500 uppercase">Questions Queue (1)</span>
+<button class="text-slate-400"><span class="material-symbols-outlined text-sm">expand_more</span></button>
+</div>
+<div class="p-4">
+<div class="flex gap-3">
+<div class="size-6 bg-red-500 rounded flex items-center justify-center text-[10px] text-white font-bold shrink-0">!</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] px-1.5 py-0.5 bg-red-100 text-red-600 font-bold rounded">BLOCKING</span>
+<span class="text-[10px] text-slate-400">Mr. T</span>
+</div>
+<p class="text-xs text-slate-700 dark:text-slate-300">How does the $29 entry point affect our 3-year CAC to LTV ratio? We need this for the Board deck.</p>
+<button class="mt-2 text-[10px] font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">reply</span> Reply to block
+                                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Approval Footer -->
+<div class="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between z-30">
+<div class="flex items-center gap-4">
+<div class="size-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-500">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div>
+<p class="text-sm font-bold">Reviewing Changes</p>
+<p class="text-xs text-slate-500">Comparing version 6 vs 7 (Latest)</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-5 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                Request Changes
+                            </button>
+<button class="px-5 py-2.5 border border-red-200 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors">
+                                Reject
+                            </button>
+<button class="flex items-center gap-2 px-8 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                                Approve v7
+                            </button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

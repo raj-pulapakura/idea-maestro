@@ -35,5 +35,10 @@ export function buildTimeline(
     tool,
   }));
 
-  return [...messageItems, ...toolItems].sort((a, b) => a.createdAt - b.createdAt);
+  return [...messageItems, ...toolItems].sort((a, b) => {
+    if (a.createdAt !== b.createdAt) {
+      return a.createdAt - b.createdAt;
+    }
+    return a.id.localeCompare(b.id);
+  });
 }

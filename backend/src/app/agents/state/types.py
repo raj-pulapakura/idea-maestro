@@ -71,6 +71,15 @@ def set_staged_edits_by(
     """
     return new
 
+def set_next_agent(
+    old: str | None,
+    new: str | None,
+) -> str | None:
+    """
+    'Last write wins' for next_agent.
+    """
+    return new
+
 
 # --- State ---
 
@@ -78,9 +87,9 @@ class Doc(TypedDict):
     title: str
     content: str
     description: str
-    doc_type: str
-    updated_by: str
-    updated_at: str
+    version: int
+    updated_by: str | None
+    updated_at: str | None
 
 class StagedEdit(TypedDict):
     doc_id: str
@@ -98,6 +107,8 @@ class ChangeSet(TypedDict):
 
 class AgentState(TypedDict):
     thread_id: str
+    run_id: str
+    next_agent: Annotated[str | None, set_next_agent]
     messages: Annotated[list[BaseMessage], add_messages]
     history: Annotated[list[Any], append_history]
     docs: Annotated[dict[str, Doc], merge_docs]

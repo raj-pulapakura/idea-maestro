@@ -12,7 +12,7 @@ class ReadDocsInput(BaseModel):
     doc_ids: list[str] = Field(description="The IDs of the documents to read")
 
 @tool(args_schema=ReadDocsInput)
-def read_docs(doc_ids: ReadDocsInput, runtime: ToolRuntime):
+def read_docs(doc_ids: list[str], runtime: ToolRuntime):
     """
     Read the docs from the state and return the full content of the docs.
 

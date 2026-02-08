@@ -12,4 +12,14 @@ class ChatRequest(BaseModel):
 
 
 class ApprovalDecision(BaseModel):
-    decision: Literal["approve", "reject"] = Field(description="approve or reject")
+    decision: Literal["approve", "reject", "request_changes"] = Field(
+        description="approve, reject, or request_changes"
+    )
+    comment: Optional[str] = Field(
+        default=None,
+        description="Optional reviewer comment for the decision",
+    )
+    interrupt_id: Optional[str] = Field(
+        default=None,
+        description="Optional LangGraph interrupt id for targeted resume",
+    )

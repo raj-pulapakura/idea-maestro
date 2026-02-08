@@ -1,7 +1,6 @@
-from typing import  Optional, TypedDict
+from typing import Optional, TypedDict
 from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
-from langgraph.types import Command
 
 from app.agents.state.types import AgentState
 from app.agents.defintions.cake_man import cake_man
@@ -18,6 +17,17 @@ class MaestroAction(TypedDict):
     is_text_response: bool
     is_goto_subagent: bool
     subagent_name: Optional[str]
+
+
+def _normalize_agent_name(value: str) -> str:
+    return (
+        value.strip()
+        .lower()
+        .replace("’", "'")
+        .replace("‘", "'")
+        .replace("`", "'")
+        .replace("_", " ")
+    )
 
 
 def maestro(state: AgentState):
@@ -45,11 +55,20 @@ def maestro(state: AgentState):
 
     state_update = {
         "messages": AIMessage(content=response.content),
-        "by_agent": AGENT_NAME
+        "by_agent": AGENT_NAME,
+        "next_agent": None,
     }
 
     if action_response["is_goto_subagent"]:
-        return Command(goto=action_response["subagent_name"], update=state_update)
+        selected = action_response.get("subagent_name")
+        if isinstance(selected, str):
+            normalized_selected = _normalize_agent_name(selected)
+            for subagent in subagents:
+                if _normalize_agent_name(subagent.name) == normalized_selected:
+                    selected = subagent.name
+                    break
+        state_update["next_agent"] = selected
+        return state_update
 
     return state_update
 

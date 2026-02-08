@@ -51,13 +51,28 @@ function mapStoredRole(role: string | undefined): ChatRole {
   return "assistant";
 }
 
+function toTimestamp(value: string | undefined, fallback: number): number {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
 export function mapHistoryRows(rows: PersistedMessageRow[]): UiMessage[] {
-  return rows.map((row, index) => ({
-    id: `history-${index}`,
-    role: mapStoredRole(row.role),
-    byAgent: row.by_agent ?? null,
-    content: parseStoredContent(row.content),
-    createdAt: index,
-    isStreaming: false,
-  }));
+  return rows.map((row, index) => {
+    const fallbackId =
+      typeof row.seq === "number" ? `seq-${row.seq}` : `history-${index}`;
+
+    return {
+      id: row.message_id ?? fallbackId,
+      runId: row.run_id ?? null,
+      role: mapStoredRole(row.role),
+      byAgent: row.by_agent ?? null,
+      content: parseStoredContent(row.content),
+      createdAt: toTimestamp(row.created_at, index),
+      isStreaming: false,
+    };
+  });
 }

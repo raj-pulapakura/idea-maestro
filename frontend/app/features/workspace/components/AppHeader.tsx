@@ -1,4 +1,8 @@
-export function AppHeader() {
+interface AppHeaderProps {
+  onOpenRunLog: () => void;
+}
+
+export function AppHeader({ onOpenRunLog }: AppHeaderProps) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-[var(--border-weak)] bg-[var(--bg-surface)] px-5">
       <div className="flex items-center gap-5">
@@ -16,6 +20,13 @@ export function AppHeader() {
         </p>
       </div>
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onOpenRunLog}
+          className="rounded-lg border border-[var(--border-weak)] bg-[var(--bg-surface)] px-3 py-1.5 text-sm font-semibold"
+        >
+          Run Log
+        </button>
         <button
           type="button"
           className="rounded-lg bg-[var(--accent-soft)] px-3 py-1.5 text-sm font-semibold text-[var(--accent)]"

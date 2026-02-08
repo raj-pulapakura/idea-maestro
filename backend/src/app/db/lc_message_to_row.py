@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from typing import Dict, Any, Optional
+import uuid
 from langchain_core.messages import BaseMessage, AIMessage, ToolMessage
 
 def lc_message_to_row(msg: BaseMessage, by_agent: Optional[str] = None) -> Dict[str, Any]:
@@ -14,6 +17,7 @@ def lc_message_to_row(msg: BaseMessage, by_agent: Optional[str] = None) -> Dict[
     content = msg.content
 
     row: Dict[str, Any] = {
+        "message_id": getattr(msg, "id", None) or str(uuid.uuid4()),
         "role": ui_role,
         "type": msg.__class__.__name__,
         "content": {"text": content} if isinstance(content, str) else {"blocks": content},
