@@ -1,20 +1,23 @@
-from typing import Optional, TypedDict
+from typing import Literal, Optional, TypedDict
+
 from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
 
-from app.agents.state.types import AgentState
-from app.agents.defintions.product_strategist import product_strategist
-from app.agents.defintions.growth_lead import growth_lead
 from app.agents.defintions.business_lead import business_lead
+from app.agents.defintions.growth_lead import growth_lead
+from app.agents.defintions.product_strategist import product_strategist
 from app.agents.defintions.technical_lead import technical_lead
+from app.agents.state.types import AgentState
 
 
 AGENT_NAME = "maestro"
 
-class MaestroAction(TypedDict):
-    is_text_response: bool
-    is_goto_subagent: bool
-    subagent_name: Optional[str]
+
+class MaestroDecision(TypedDict):
+    user_message: str
+    action: Literal["delegate", "respond"]
+    target_agent: Optional[str]
+    rationale: str
 
 
 def _normalize_agent_name(value: str) -> str:
@@ -28,41 +31,80 @@ def _normalize_agent_name(value: str) -> str:
     )
 
 
-def maestro(state: AgentState):
-    text_response_model = ChatOpenAI(
-        model="gpt-5.2",
+def _resolve_target_agent(value: Optional[str]) -> Optional[str]:
+    if not isinstance(value, str) or not value.strip():
+        return None
+
+    normalized_value = _normalize_agent_name(value)
+    return normalized_subagent_map.get(normalized_value)
+
+
+def _fallback_decision() -> MaestroDecision:
+    return {
+        "user_message": (
+            "Thanks for sharing that. I do not have enough confidence to delegate yet, "
+            "so I will keep this at the orchestrator layer for now."
+        ),
+        "action": "respond",
+        "target_agent": None,
+        "rationale": "fallback_due_to_invalid_or_unavailable_structured_output",
+    }
+
+
+def _normalize_decision(raw: object) -> MaestroDecision:
+    if not isinstance(raw, dict):
+        return _fallback_decision()
+
+    user_message_raw = raw.get("user_message")
+    user_message = user_message_raw.strip() if isinstance(user_message_raw, str) else ""
+    if not user_message:
+        return _fallback_decision()
+
+    action_raw = raw.get("action")
+    action: Literal["delegate", "respond"] = (
+        action_raw if action_raw in {"delegate", "respond"} else "respond"
     )
 
-    response = text_response_model.invoke([
-        {"role": "system", "content": SYSTEM_PROMPT},
-        *state["messages"],
-    ])
+    resolved_target = _resolve_target_agent(raw.get("target_agent"))
+    if action == "delegate" and resolved_target is None:
+        action = "respond"
 
-    action_model = ChatOpenAI(
-        model="gpt-5.2",
-    ).with_structured_output(MaestroAction, method="json_schema")
+    rationale_raw = raw.get("rationale")
+    rationale = rationale_raw.strip() if isinstance(rationale_raw, str) else ""
 
-    action_response = action_model.invoke([
-        {"role": "system", "content": ACTION_DETECTION_PROMPT},
-        {"role": "user", "content": f"AI Assistant message: {response.content}"}
-    ])
+    return {
+        "user_message": user_message,
+        "action": action,
+        "target_agent": resolved_target if action == "delegate" else None,
+        "rationale": rationale,
+    }
+
+
+def maestro(state: AgentState):
+    decision_model = ChatOpenAI(model="gpt-5.2").with_structured_output(
+        MaestroDecision,
+        method="json_schema",
+    )
+
+    try:
+        raw_decision = decision_model.invoke(
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                *state["messages"],
+            ]
+        )
+        decision = _normalize_decision(raw_decision)
+    except Exception:
+        decision = _fallback_decision()
 
     state_update = {
-        "messages": AIMessage(content=response.content),
+        "messages": AIMessage(content=decision["user_message"]),
         "by_agent": AGENT_NAME,
         "next_agent": None,
     }
 
-    if action_response["is_goto_subagent"]:
-        selected = action_response.get("subagent_name")
-        if isinstance(selected, str):
-            normalized_selected = _normalize_agent_name(selected)
-            for subagent in subagents:
-                if _normalize_agent_name(subagent.name) == normalized_selected:
-                    selected = subagent.name
-                    break
-        state_update["next_agent"] = selected
-        return state_update
+    if decision["action"] == "delegate" and decision["target_agent"]:
+        state_update["next_agent"] = decision["target_agent"]
 
     return state_update
 
@@ -74,44 +116,43 @@ subagents = [
     technical_lead,
 ]
 
-subagents_descriptions = "\n".join([f"- {subagent.name}: {subagent.short_desc}" for subagent in subagents])
+normalized_subagent_map = {
+    _normalize_agent_name(subagent.name): subagent.name for subagent in subagents
+}
+
+subagents_descriptions = "\n".join(
+    [f"- {subagent.name}: {subagent.short_desc}" for subagent in subagents]
+)
 
 
 SYSTEM_PROMPT = f"""
 You are ${AGENT_NAME}, the orchestrator.
 
-You only route user requests to the right sub-agent(s). You do not do the work yourself.
+You only route user requests to the right sub-agent(s). You do not do specialist work yourself.
 
 Behavior
 - Friendly, casual manager tone.
 - Default to delegating whenever possible.
 - When delegating, briefly tell the user why.
-- You do not ask the user questions about their idea. You are purely a delegator.
+- If delegation is not appropriate, provide a concise direct response.
 
 Delegation rules
-- Do not give detailed instructions.
-- Tell the chosen sub-agent they are in charge.
-- Refer to sub-agents only by the exact names in Sub-agents descriptions (exact casing). Never invent names.
+- Select only one action: delegate or respond.
+- If delegating, choose exactly one specialist from the official roster.
+- Refer to specialists only by exact roster names (exact casing).
+- Do not invent specialist names.
 
-Multi-agent orchestration rules:
-- Only one sub-agent should stage an edit at a time.
-- After a sub-agent stages an edit, we must wait for the user to approve or reject the edit.
-- This is to prevent multiple sub-agents from staging conflicting edits at the same time.
+Output contract
+- Return structured output with fields:
+  - user_message: concise user-facing text
+  - action: "delegate" or "respond"
+  - target_agent: specialist name when action is "delegate", otherwise null
+  - rationale: short internal reason for the action
 
-# Sub-agents descriptions
-{subagents_descriptions}"""
+Multi-agent orchestration constraints
+- Only one specialist should stage an edit at a time.
+- After a specialist stages edits, user approval is required before more staged edits.
 
-ACTION_DETECTION_PROMPT = """
-Your simple task is to determine the intended action of the AI assistant.
-Given an AI Assistant message such as:
-- "Looks like you're app idea could use <reason>. I'm going to hand off to <sub_agent>"
-- "What are your thoughts on this?"
-
-You must output a JSON object with the following fields:
-- is_text_response: Whether the message is a text response.
-- is_goto_subagent: Whether the message is a request to goto a sub-agent.
-- subagent_name: The name of the sub-agent to goto if action is "goto_subagent".
-
-Either is_text_response or is_goto_subagent must be true, and the other must be false.
-If is_goto_subagent is true, then subagent_name must be the name of a sub-agent exactly as it appears in the AI Assistant message.
+# Specialist roster
+{subagents_descriptions}
 """
