@@ -32,18 +32,10 @@ Current persistence is applied at Maestro-node level, while sub-agent message ou
 - Thread history can be incomplete after reload.
 - Weakens trust, traceability, and incident/debug workflows.
 
-#### Possible high-level solutions
-1. **Graph-wide message persistence adapter (recommended direction)**
+#### Implementation decision
+**Graph-wide message persistence adapter**
 - Add a standardized persistence layer that runs for any node output containing messages.
 - Ensure by-agent attribution is preserved consistently.
-
-2. **Per-subgraph wrapper strategy**
-- Wrap each sub-agent node/subgraph with the same persistence wrapper currently used for Maestro.
-- Lower conceptual change, but higher risk of drift/duplication.
-
-3. **Streaming-event-to-db fallback recorder**
-- Persist from normalized stream events (`message.completed`) if node-level output misses coverage.
-- Useful as resilience layer; not preferred as sole source of truth.
 
 ---
 
@@ -56,18 +48,10 @@ The current top-level run usually ends after one routed sub-agent execution, lim
 - Underdelivers on core product promise of coordinated multi-agent refinement.
 - Forces extra user turns for what should be one orchestration cycle.
 
-#### Possible high-level solutions
-1. **Supervisor loop with explicit stop conditions (recommended direction)**
+#### Implementation decision
+**Supervisor loop with explicit stop conditions**
 - After each sub-agent outcome, route back to Maestro/supervisor.
-- Continue until stop criteria are met (e.g., no new edits, confidence threshold, max turns, or approval gate reached).
-
-2. **Plan-then-execute orchestration**
-- Maestro first creates a short action plan (ordered agents), then executes sequentially.
-- Easier observability, but potentially less adaptive than dynamic looping.
-
-3. **Hybrid loop with guardrails**
-- Dynamic routing with hard limits (max N agent turns, max tool calls, budget/time cap).
-- Good balance between adaptability and control.
+- Stop condition is LLM-decided by the supervisor (with engineering guardrails to avoid runaway loops).
 
 ---
 
@@ -80,18 +64,10 @@ Routing currently relies on generating freeform text and then using a second mod
 - Compounds uncertainty across two model outputs.
 - Harder to reason about route failures and recover quickly.
 
-#### Possible high-level solutions
-1. **Single-call structured Maestro output (recommended direction)**
+#### Implementation decision
+**Single-call structured Maestro output**
 - Maestro returns a strict schema: `{user_message, action, target_agent, rationale}` in one call.
 - Remove secondary intent-classifier call.
-
-2. **Rule-assisted routing with schema validation**
-- Use deterministic checks for explicit patterns plus schema-driven fallback.
-- Improves robustness for common routing intents.
-
-3. **Constrained action vocabulary + retries**
-- Restrict allowed actions and normalize agent names with strict validation/retry loop.
-- Fails closed to safe text response when validation fails.
 
 ---
 
@@ -104,18 +80,10 @@ Backend approval is changeset-level, while current review UX can suggest stepwis
 - User mental model can diverge from actual commit behavior.
 - Increased risk of incorrect expectations in review-heavy workflows.
 
-#### Possible high-level solutions
-1. **Make UX explicitly changeset-level (recommended direction for immediate cleanup)**
+#### Implementation decision
+**Make UX explicitly changeset-level**
 - Keep backend semantics as-is.
 - Update UI copy/actions to make it clear that decision applies to the full changeset.
-
-2. **Introduce true doc-level decisioning in backend**
-- Extend approval contract to accept per-doc decisions and partial apply behavior.
-- Higher complexity; likely a separate phase.
-
-3. **Two-step model: doc inspection then one final changeset decision**
-- Preserve single backend decision point while allowing doc-by-doc browsing.
-- Clarify that intermediate doc actions are review progression only, not commit operations.
 
 ## 5) Success Criteria (High-Level)
 - History consistency: conversation snapshots include all surfaced agent messages for a run.

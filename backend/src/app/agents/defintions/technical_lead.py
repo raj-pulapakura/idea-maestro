@@ -15,6 +15,8 @@ from app.agents.state.types import AgentState
 from app.agents.tools.read_docs import read_docs
 from app.agents.tools.search_web import search_web
 from app.agents.tools.stage_edits import stage_edits
+from app.db.get_conn_factory import conn_factory
+from app.db.persist_messages_wrapper import persist_messages_adapter
 
 
 class TechnicalLead(BaseSubAgent):
@@ -49,6 +51,12 @@ class TechnicalLead(BaseSubAgent):
             tools=[stage_edits, read_docs, search_web],
             middleware=[dynamic_prompt(self.build_system_prompt)],
             state_schema=AgentState,
+        )
+
+        agent = persist_messages_adapter(
+            agent,
+            conn_factory=conn_factory,
+            agent_name=self.name,
         )
 
         sg = StateGraph(AgentState)
