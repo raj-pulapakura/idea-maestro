@@ -16,13 +16,23 @@ def lc_message_to_row(msg: BaseMessage, by_agent: Optional[str] = None) -> Dict[
     # Content can be str or list of blocks depending on provider/version
     content = msg.content
 
+    normalized_by_agent: Optional[str]
+    if isinstance(by_agent, str) and by_agent.strip():
+        normalized_by_agent = by_agent.strip()
+    elif ui_role == "user":
+        normalized_by_agent = "user"
+    elif ui_role == "system":
+        normalized_by_agent = "system"
+    else:
+        normalized_by_agent = None
+
     row: Dict[str, Any] = {
         "message_id": getattr(msg, "id", None) or str(uuid.uuid4()),
         "role": ui_role,
         "type": msg.__class__.__name__,
         "content": {"text": content} if isinstance(content, str) else {"blocks": content},
         "metadata": msg.additional_kwargs or {},
-        "by_agent": by_agent if by_agent else "user"
+        "by_agent": normalized_by_agent,
     }
 
     # Tool calls live on AIMessage in most LC versions

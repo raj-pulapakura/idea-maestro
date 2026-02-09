@@ -180,11 +180,38 @@ None required.
 - Risk: Performance overhead from per-node DB writes.
   - Mitigation: persist only when update includes completed message objects; keep current transaction scope.
 
-## 11) Decisions (Resolved)
+## 11) Encountered Issue and Resolution
+### Issue observed during implementation
+- Symptom: the first user and maestro assistant messages were duplicated in `chat_messages` after a specialist turn.
+- Root cause:
+  - Specialist adapter persisted `update["messages"]` as a full batch instead of only new messages.
+  - That batch included prior conversation context.
+  - Historical messages without stable IDs were reinserted with new generated UUIDs, bypassing duplicate detection.
+  - Batch-level attribution incorrectly labeled duplicated rows with specialist `by_agent`.
+
+### Resolution implemented
+- Added **delta-only persistence** in adapter:
+  - Compare `state["messages"]` and `update["messages"]`.
+  - Persist only the newly appended suffix.
+- Added **per-message attribution** rules:
+  - `human` -> `user`
+  - `system` -> `system`
+  - non-maestro agent outputs -> specialist agent name
+  - maestro outputs -> `maestro`
+- Removed serializer fallback that defaulted non-user messages to `by_agent = "user"`.
+
+### Outcome
+- No duplicate replay of historical context messages.
+- Correct attribution contract now holds:
+  - Maestro messages attributed to `maestro`
+  - User messages attributed to `user`
+  - Specialist messages attributed to specialist agent.
+
+## 12) Decisions (Resolved)
 1. **Transcript table**: deferred. `chat_messages` remains the sole source of truth in 4.1.
 2. **Tool event table**: deferred. `tool.call` / `tool.result` persistence is out of scope for 4.1.
 
-## 12) Implementation Checklist
+## 13) Implementation Checklist
 - [x] Add generalized `persist_messages_adapter` with attribution controls.
 - [x] Update workflow/subgraphs to apply adapter graph-wide.
 - [x] Add duplicate-safe conflict handling.

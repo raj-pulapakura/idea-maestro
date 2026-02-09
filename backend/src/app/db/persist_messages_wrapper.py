@@ -45,6 +45,48 @@ def _resolve_by_agent(update: Dict[str, Any], agent_name: str | None) -> str:
     return "agent"
 
 
+def _message_fingerprint(message: Any) -> tuple[Any, ...]:
+    return (
+        getattr(message, "type", None),
+        getattr(message, "id", None),
+        getattr(message, "name", None),
+        getattr(message, "tool_call_id", None),
+        repr(getattr(message, "content", None)),
+    )
+
+
+def _extract_new_messages(state: Dict[str, Any], update: Dict[str, Any]) -> list[Any]:
+    raw_messages = update.get("messages")
+    if not raw_messages:
+        return []
+
+    update_messages = raw_messages if isinstance(raw_messages, list) else [raw_messages]
+    state_messages = state.get("messages") or []
+    if not isinstance(state_messages, list):
+        state_messages = []
+
+    if len(update_messages) < len(state_messages):
+        return update_messages
+
+    prefix_matches = all(
+        _message_fingerprint(update_messages[idx]) == _message_fingerprint(state_messages[idx])
+        for idx in range(len(state_messages))
+    )
+    if not prefix_matches:
+        return update_messages
+
+    return update_messages[len(state_messages):]
+
+
+def _resolve_message_by_agent(message: Any, default_agent: str) -> str:
+    role = getattr(message, "type", None)
+    if role == "human":
+        return "user"
+    if role == "system":
+        return "system"
+    return default_agent
+
+
 def persist_messages_adapter(
     node_fn: Callable[[Dict[str, Any]], Any] | Any,
     *,
@@ -66,15 +108,15 @@ def persist_messages_adapter(
         if should_persist is not None and not should_persist(state, update):
             return out
 
-        by_agent = _resolve_by_agent(update, agent_name)
-        new_msgs = update.get("messages")
+        default_by_agent = _resolve_by_agent(update, agent_name)
+        new_msgs = _extract_new_messages(state, update)
         if not new_msgs:
             return out
 
-        if not isinstance(new_msgs, list):
-            new_msgs = [new_msgs]
-
-        rows = [lc_message_to_row(m, by_agent) for m in new_msgs]
+        rows = [
+            lc_message_to_row(message, _resolve_message_by_agent(message, default_by_agent))
+            for message in new_msgs
+        ]
         thread_id = state["thread_id"]
         run_id = state.get("run_id")
 
