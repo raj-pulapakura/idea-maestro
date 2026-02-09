@@ -1,10 +1,8 @@
 export const AGENT_COLOR: Record<string, string> = {
-  "Devil's Advocate": "bg-orange-500",
-  "Angel Eyes": "bg-teal-500",
-  "Capital Freak": "bg-emerald-600",
-  "Cake Man": "bg-pink-500",
-  Buzz: "bg-amber-500",
-  "Mr. T": "bg-slate-500",
+  "Product Strategist": "bg-orange-500",
+  "Growth Lead": "bg-teal-500",
+  "Business Lead": "bg-emerald-600",
+  "Technical Lead": "bg-slate-500",
   maestro: "bg-indigo-500",
 };
 

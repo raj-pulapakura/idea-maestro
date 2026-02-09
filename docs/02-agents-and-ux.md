@@ -2,67 +2,50 @@
 
 ### Agent Roster
 
-- **Devil’s Advocate**  
-  - Role: Brutally honest critic. Finds flaws, risks, and market saturation points.  
-  - Values: Truth over comfort, data over vibes.  
-  - Pet peeves: Buzzwords, “revolutionary AI” with no specifics.  
+- **Product Strategist**  
+  - Role: Product strategy lead focused on problem framing, ICP, and prioritization.  
+  - Values: Clarity over fluff, user outcomes over feature sprawl.  
   - Typical actions:
-    - Adds/updates **Risk Register** entries.
-    - Tones down overhyped language in **The Pitch**.
-    - Raises blocking questions about differentiation and feasibility.
+    - Improves **Product Brief** clarity and differentiation.
+    - Tightens **MVP Scope & Non-Goals**.
+    - Captures key product tradeoffs in **Risk & Decision Log**.
 
-- **Angel Eyes**  
-  - Role: Problem-solver who turns critiques into actionable fixes.  
-  - Values: Every valid criticism deserves a serious solution attempt.  
+- **Growth Lead**  
+  - Role: Messaging, distribution, and experiment planning specialist.  
+  - Values: Discoverability, crisp positioning, test-and-learn execution.  
   - Typical actions:
-    - Adds mitigation strategies to **Risk Register**.
-    - Suggests pivots or refinements to **The Pitch** and **Feature Roadmap**.
-    - References analogous successful products or case studies.
+    - Defines launch sequence and channel strategy in **GTM Plan**.
+    - Sharpens ICP/messaging in **Product Brief**.
+    - Adds near-term growth experiments to **Next Actions Board**.
 
-- **Capital Freak**  
-  - Role: Business model and unit economics nerd.  
-  - Values: Clear monetization, sane unit economics, realistic TAM.  
+- **Business Lead**  
+  - Role: Business model and economic viability owner.  
+  - Values: Sustainable unit economics and explicit assumptions.  
   - Typical actions:
-    - Fills out **Business Model Canvas** style structures.
-    - Proposes pricing tiers and revenue milestones.
-    - Flags unprofitable feature ideas.
+    - Maintains **Business Model & Pricing** decisions.
+    - Tracks confidence-tagged assumptions in **Evidence & Assumptions Log**.
+    - Documents financial tradeoffs in **Risk & Decision Log**.
 
-- **Cake Man**  
-  - Role: 10x improver and “wow factor” designer.  
-  - Values: Delight, virality, and product-led growth patterns.  
+- **Technical Lead**  
+  - Role: Technical execution and delivery risk owner.  
+  - Values: Practical architecture, speed-to-ship, controlled complexity.  
   - Typical actions:
-    - Adds “wow” features to **Feature Roadmap** (MVP vs v2 vs crazy ideas).
-    - Suggests engagement and retention loops.
-    - Pushes back on “boring but safe” product ideas.
-
-- **Buzz**  
-  - Role: Marketing and distribution strategist.  
-  - Values: Attention, clarity of message, and realistic channels.  
-  - Typical actions:
-    - Defines ICP and messaging in **The Pitch** and a **GTM Plan** doc.
-    - Outlines launch strategy and content ideas.
-    - Chooses channels (social, communities, PR, etc.).
-
-- **Mr. T**  
-  - Role: Technical execution and scoping expert.  
-  - Values: Simplicity, fast shipping, minimal tech debt.  
-  - Typical actions:
-    - Writes **Technical Spec**: stack choices, architecture, timelines.
-    - Suggests MVP cut lines for features.
-    - Pushes back on over-engineering and scope creep.
+    - Maintains **Technical Plan** with milestones and dependencies.
+    - Enforces clear MVP cut lines via **MVP Scope & Non-Goals**.
+    - Adds delivery-critical tasks to **Next Actions Board**.
 
 ### Living Documents
 
 These are the shared artifacts agents continuously edit:
 
-- **The Pitch** – One-pager describing:
-  - Problem, solution, target user, value prop, and positioning.
-- **Risk Register** – List of risks with severity and mitigation.
-- **Business Model** – Monetization, pricing, revenue milestones.
-- **Feature Roadmap** – MVP, v2, and stretch features.
-- **GTM Plan** – Launch, channels, content strategy, growth loops.
-- **Technical Spec** – Architecture, stack, timeline, milestones.
-- **Open Questions** – Outstanding questions for the user to answer.
+- **Product Brief** – Problem, ICP, value proposition, and positioning.
+- **Evidence & Assumptions Log** – Assumptions with confidence and validation status.
+- **MVP Scope & Non-Goals** – What is in MVP vs explicitly out of scope.
+- **Technical Plan** – Architecture, stack, milestones, constraints.
+- **GTM Plan** – Launch sequence, channels, and growth experiments.
+- **Business Model & Pricing** – Monetization, packaging, pricing, and economics.
+- **Risk & Decision Log** – Major risks, decisions, and rationale.
+- **Next Actions Board** – Prioritized tasks for the next two weeks.
 
 Each agent’s turn typically:
 
@@ -78,11 +61,11 @@ Each agent’s turn typically:
 - **Left: Chat Panel**
   - Messages from agents and user.
   - Agent avatars, colors, and names.
-  - Inline tags (e.g., “edited: Risk Register, The Pitch”).
+  - Inline tags (e.g., “edited: Risk & Decision Log, Product Brief”).
   - “Pause loop” and “Resume” controls.
 
 - **Right: Documents Panel**
-  - List of all living documents with status (e.g., “Pitch: v7, updated 2m ago by Kai”).
+  - List of all living documents with status (e.g., “Product Brief: v7, updated 2m ago by Product Strategist”).
   - Clicking opens full doc view and history.
   - Optional diff view tied to a specific agent message.
 
@@ -114,10 +97,8 @@ High-level logic:
 - If there are **blocking questions** unanswered:
   - Prefer to pause or nudge the user before continuing deeper.
 - If a document was just heavily edited by one agent:
-  - Consider giving the next turn to an “opposing” or complementary agent (e.g., after Kai adds big features, let Max comment on cost).
+  - Consider giving the next turn to a complementary agent (e.g., after Growth Lead proposes aggressive experiments, let Business Lead validate economics).
 - If major areas (risk, monetization, GTM, tech, roadmap) aren’t covered yet:
   - Pick agents whose domains are underrepresented.
 - If everything is reasonably covered and no blocking questions remain:
   - Switch into **synthesis mode** to finalize docs.
-
-

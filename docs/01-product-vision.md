@@ -15,7 +15,7 @@ Idea Maestro is a **multi-agent system with a chat front-end** where:
 - Users input:
   - Their **initial idea**
   - **Personal context** (bio, goals, constraints; optionally imported from LinkedIn, GitHub README, etc.)
-- A group of **opinionated agents** (Devil’s Advocate, Angel Eyes, Capital Freak, Cake Man, Buzz, Mr. T) iteratively:
+- A group of **specialized agents** (Product Strategist, Growth Lead, Business Lead, Technical Lead) iteratively:
   - Ask clarifying questions
   - Propose changes
   - **Take action** by editing a set of **living documents** that represent the evolving idea.
@@ -57,17 +57,14 @@ At the end, the user has:
 1. **Sign up** → Get onboarding and some free credits.
 2. **Describe your idea** (short or long form) and optionally your background/goals.
 3. **Watch the agents debate and refine**:
-   - Devil’s Advocate attacks the idea.
-   - Angel Eyes proposes fixes.
-   - Capital Freak shapes the business model.
-   - Cake Man pushes for 10x features.
-   - Buzz designs GTM and distribution.
-   - Mr. T scopes tech stack and milestones.
+   - Product Strategist sharpens problem framing, ICP, and value proposition.
+   - Growth Lead defines messaging, channels, and launch experiments.
+   - Business Lead shapes pricing and unit economics.
+   - Technical Lead scopes architecture, MVP boundaries, and delivery milestones.
 4. **Interact in the loop**:
    - Pause any time, respond, correct, or redirect.
    - See document diffs before/after each agent edit.
 5. **Download your strategy**:
-   - Pitch, roadmap, technical spec, GTM, risk register, etc.
+   - Product brief, MVP scope, technical plan, GTM plan, pricing model, decision log, and next actions.
 6. **Return later** to iterate on the same idea or start a new one.
-
 

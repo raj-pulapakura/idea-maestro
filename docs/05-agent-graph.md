@@ -2,232 +2,84 @@
 
 | Version | Date | Notes |
 | --- | --- | --- |
-| v1.1 | 2026-02-04 | Added state update inventory and versioning table. |
-| v1.0 | 2026-02-04 | Initial full graph map with nodes, LLM calls, tools, and flows. |
+| v2.0 | 2026-02-09 | Updated roster to 4 specialists and refreshed living-document model. |
 
 ```mermaid
 flowchart TD
   START((START)) --> M["maestro (node)"]
   M --> END((END))
-  M --> CM["Cake Man (subgraph node)"]
-  CM --> END
+  M --> PS["Product Strategist (subgraph)"]
+  M --> GL["Growth Lead (subgraph)"]
+  M --> BL["Business Lead (subgraph)"]
+  M --> TL["Technical Lead (subgraph)"]
 
-  subgraph Cake Man Subgraph
-    CMA["agent (Cake Man LLM)"]
-    CMB["build_changeset"]
-    CMC["await_approval (interrupt)"]
-    CMD["apply_changeset"]
-    CMR["reject_changeset"]
+  PS --> END
+  GL --> END
+  BL --> END
+  TL --> END
 
-    CMA --> CMB --> CMC
-    CMC -- approve --> CMD --> END
-    CMC -- reject --> CMR --> END
+  subgraph Specialist Subgraph Pattern
+    A["agent (LLM + tools)"] --> B["build_changeset"] --> C["await_approval (interrupt)"]
+    C -- approve --> D["apply_changeset"] --> E((END))
+    C -- reject/request_changes --> F["reject_changeset"] --> E
   end
 ```
 
-## Graph Inventory (All Nodes and Edges)
+## Top-Level Workflow
+Source: `backend/src/app/agents/build_workflow.py`
 
-### Top-level graph (`backend/src/app/agents/main.py`)
-- Nodes
-  - `maestro` (wrapped by `persist_messages_wrapper`)
-  - `Cake Man` (subgraph node from `cake_man.build_subgraph()`)
-- Edges
-  - `START -> maestro`
-  - `maestro -> END`
-  - `maestro -> Cake Man`
-  - `Cake Man -> END`
+- Entry: `START -> maestro`
+- Maestro routes to one of:
+  - `Product Strategist`
+  - `Growth Lead`
+  - `Business Lead`
+  - `Technical Lead`
+- If no routing target is selected, graph exits to `END`.
 
-### Cake Man subgraph (`backend/src/app/agents/defintions/cake_man.py`)
-- Nodes
-  - `agent` (LLM agent created by `create_agent`)
-  - `build_changeset`
-  - `await_approval`
-  - `apply_changeset`
-  - `reject_changeset`
-- Edges
-  - `agent -> build_changeset`
-  - `build_changeset -> await_approval`
-  - `apply_changeset -> END`
-  - `reject_changeset -> END`
-- Dynamic transitions (not explicit edges; come from `Command`)
-  - `await_approval` returns `Command(goto="apply_changeset")` on approval
-  - `await_approval` returns `Command(goto="reject_changeset")` on rejection
-  - `propose_edits` tool returns `Command(goto="build_changeset")`
+## Specialist Subgraph Pattern
+Source examples:
+- `backend/src/app/agents/defintions/product_strategist.py`
+- `backend/src/app/agents/defintions/growth_lead.py`
+- `backend/src/app/agents/defintions/business_lead.py`
+- `backend/src/app/agents/defintions/technical_lead.py`
 
-## Every LLM Call (Explicit in Code)
+Each specialist uses the same node pattern:
+- `agent` (LLM agent created by `create_agent`)
+- `build_changeset`
+- `await_approval` (LangGraph interrupt)
+- `apply_changeset`
+- `reject_changeset`
 
-### Maestro node (`backend/src/app/agents/defintions/maestro.py`)
-1. `ChatOpenAI(model="gpt-5.2").invoke(...)`
-   - Purpose: produce the Maestro reply content.
-2. `ChatOpenAI(model="gpt-5.2").with_structured_output(...).invoke(...)`
-   - Purpose: classify the Maestro reply into an action (text vs. goto sub-agent).
+## Tooling Used By Specialists
+- `stage_edits`: stage full document updates into state and jump to `build_changeset`
+- `read_docs`: read current document content from state
+- `search_web`: external web lookup for current/reference information
 
-### Cake Man agent node (`backend/src/app/agents/defintions/cake_man.py`)
-- `create_agent("gpt-5.2", tools=[propose_edits, read_docs], middleware=[dynamic_prompt(...)])`
-  - This node is the Cake Man LLM call site.
-  - The exact number of LLM turns per run is controlled by LangChain's agent loop defaults (not configured here).
-  - Tool calls (`read_docs`, `propose_edits`) do not themselves call LLMs.
+## Living Documents (Current Baseline)
+Source: `backend/src/app/agents/state/empty_docs.py`
 
-### LLM imports present but unused
-- `ChatAnthropic` is imported in `maestro.py` and `cake_man.py` but not used.
+- `product_brief`
+- `evidence_assumptions_log`
+- `mvp_scope_non_goals`
+- `technical_plan`
+- `gtm_plan`
+- `business_model_pricing`
+- `risk_decision_log`
+- `next_actions_board`
 
-## Tools and Their Effects (All Tool Calls)
+## Streaming and Persistence
+- Graph stream mode: `messages`, `updates`, `custom`
+- API stream adapter emits normalized SSE events:
+  - run lifecycle (`run.started`, `run.completed`, `run.error`)
+  - agent lifecycle (`agent.status`)
+  - message lifecycle (`message.delta`, `message.completed`)
+  - tool lifecycle (`tool.call`, `tool.result`)
+  - review lifecycle (`changeset.*`, `approval.required`)
+- Endpoints:
+  - `POST /api/chat/{thread_id}` starts a chat-triggered run
+  - `POST /api/chat/{thread_id}/approval` resumes an interrupted run with user decision
+  - `GET /api/chat/{thread_id}` returns thread snapshot for hydration/recovery
 
-### `read_docs` tool (`backend/src/app/agents/tools/read_docs.py`)
-- Input: list of `doc_ids`
-- Output: full doc content subset from state
-- No side effects other than returning data
-
-### `propose_edits` tool (`backend/src/app/agents/tools/propose_edits.py`)
-- Validates doc IDs exist
-- Emits `agent.proposed_edits` event
-- Returns `Command` with:
-  - `update`: `proposed_edits`, `proposal_summary`, `proposal_by`, and a `ToolMessage`
-  - `goto="build_changeset"` to continue the subgraph flow
-
-## Change Set Flow (All Nodes and Side Effects)
-
-### `build_changeset`
-- Converts `proposed_edits` into a `ChangeSet`
-- Builds unified diffs per doc
-- Emits `changeset.created`
-- Updates state:
-  - `pending_change_set`
-  - clears `proposed_edits`, `proposal_summary`, `proposal_by`
-
-### `await_approval`
-- Emits an interrupt with the pending change set summary + diffs
-- On approval:
-  - Emits `changeset.approved`
-  - Returns `Command(goto="apply_changeset")`
-- On rejection:
-  - Emits `changeset.rejected`
-  - Returns `Command(goto="reject_changeset")`
-
-### `apply_changeset`
-- Applies the edits to `docs` with updated timestamps and `updated_by`
-- Emits `changeset.applied`
-- Clears `pending_change_set`
-
-### `reject_changeset`
-- Emits `changeset.discarded`
-- Clears `pending_change_set`
-
-## State Shape (All Fields in `AgentState`)
-
-From `backend/src/app/agents/state/types.py`:
-- `thread_id`
-- `messages` (LangGraph reducer `add_messages`)
-- `history` (append reducer)
-- `docs` (merge reducer by doc_id)
-- `docs_summary` (merge reducer)
-- `proposed_edits` (append reducer)
-- `proposal_summary`
-- `proposal_by`
-- `pending_change_set` (last-write-wins)
-
-## All State Updates (By Node / Tool)
-
-### `get_initial_state_update` (`backend/src/app/agents/state/get_initial_state_update.py`)
-- Always sets:
-  - `thread_id`
-  - `messages` (initial `HumanMessage`)
-  - `proposed_edits` (empty list)
-  - `proposal_summary` (empty string)
-  - `proposal_by` (empty string)
-  - `pending_change_set` (`None`)
-- If `is_new_thread`:
-  - `docs` (initialized from `state/docs.py`)
-  - `docs_summary` (all doc ids set to `"no content yet"`)
-
-### `maestro` node (`backend/src/app/agents/defintions/maestro.py`)
-- Always returns a state update containing:
-  - `messages`: a new `AIMessage` (the Maestro reply)
-  - `by_agent`: `"maestro"` (used by `persist_messages_wrapper` to tag persistence)
-- If routing to sub-agent:
-  - Returns `Command(goto=<subagent_name>, update=<state_update_above>)`
-
-### `read_docs` tool (`backend/src/app/agents/tools/read_docs.py`)
-- Returns a subset of `docs` content
-- Does not mutate or update state
-
-### `propose_edits` tool (`backend/src/app/agents/tools/propose_edits.py`)
-- Validates doc ids against `docs`
-- Emits `agent.proposed_edits`
-- Returns `Command` that updates:
-  - `proposed_edits` (full list of new proposed edits)
-  - `proposal_summary`
-  - `proposal_by`
-  - `messages` (a `ToolMessage` acknowledging success)
-- Also returns `goto="build_changeset"`
-
-### `build_changeset` node (`backend/src/app/agents/nodes/change_set.py`)
-- If `proposed_edits` is empty:
-  - Returns `{}` (no state update)
-- Otherwise updates:
-  - `pending_change_set` (new `ChangeSet` with diffs and metadata)
-  - `proposed_edits` (cleared to `[]`)
-  - `proposal_summary` (cleared to `""`)
-  - `proposal_by` (cleared to `""`)
-
-### `await_approval` node (`backend/src/app/agents/nodes/change_set.py`)
-- If no pending change set or not `"pending"`:
-  - Returns `{}` (no state update)
-- Otherwise:
-  - Emits an interrupt payload containing the change set summary/diffs
-  - On approval: `Command(goto="apply_changeset")` (no direct state fields updated here)
-  - On rejection: `Command(goto="reject_changeset")` (no direct state fields updated here)
-
-### `apply_changeset` node (`backend/src/app/agents/nodes/change_set.py`)
-- If no pending change set:
-  - Returns `{}` (no state update)
-- Otherwise updates:
-  - `docs` (merged; content replaced for edited docs, `updated_by` + `updated_at` set)
-  - `pending_change_set` (cleared to `None`)
-
-### `reject_changeset` node (`backend/src/app/agents/nodes/change_set.py`)
-- Updates:
-  - `pending_change_set` (cleared to `None`)
-
-## Persistence and Streaming
-
-### Message persistence (`backend/src/app/db/persist_messages_wrapper.py`)
-- Only the `maestro` node is wrapped to persist messages to Postgres.
-- The Cake Man subgraph is currently not wrapped (comment notes "removed persistence").
-
-### Checkpointing
-- `PostgresSaver` is used when compiling the graph in `backend/src/app/routes/chat.py`.
-- The graph runs with `stream_mode=["messages", "updates", "custom"]`.
-
-### Custom stream events (all emitters)
-- `emit_event` writes custom stream chunks for:
-  - `agent.proposed_edits`
-  - `changeset.created`
-  - `changeset.approved`
-  - `changeset.rejected`
-  - `changeset.applied`
-  - `changeset.discarded`
-
-## Current Agent Roster in Code (Wired)
-
-Defined and wired:
-- `maestro` (orchestrator)
-- `Cake Man` (sub-agent)
-
-Not wired in code (even though described in docs):
-- Devil's Advocate (Damien)
-- Angel Eyes (Grace)
-- Capital Freak (Max)
-- Buzz (Zara)
-- Mr. T (Tomas)
-
-## Entry and Approval Endpoints (Graph Entry Points)
-
-### `POST /api/chat/{thread_id}`
-- Creates a new thread ID (currently always new)
-- Initializes state via `get_initial_state_update`
-- Runs `graph.stream(...)` until completion or interrupt
-
-### `POST /api/chat/{thread_id}/approval`
-- Resumes the graph with `Command(resume={"decision": ...})`
-- Continues from the interrupt in `await_approval`
+## Known Constraints
+- Current orchestration remains single-hop per run (`maestro -> one specialist -> end`), with approval gates inside specialist subgraphs.
+- Message persistence is still strongest at orchestrator-level output; Phase 3.1 cleanup tracks full specialist-message durability as a P0 issue.

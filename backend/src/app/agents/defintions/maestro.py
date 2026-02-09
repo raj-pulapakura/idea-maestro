@@ -3,12 +3,10 @@ from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
 
 from app.agents.state.types import AgentState
-from app.agents.defintions.cake_man import cake_man
-from app.agents.defintions.devils_advocate import devils_advocate
-from app.agents.defintions.angel_eyes import angel_eyes
-from app.agents.defintions.capital_freak import capital_freak
-from app.agents.defintions.buzz import buzz
-from app.agents.defintions.mr_t import mr_t
+from app.agents.defintions.product_strategist import product_strategist
+from app.agents.defintions.growth_lead import growth_lead
+from app.agents.defintions.business_lead import business_lead
+from app.agents.defintions.technical_lead import technical_lead
 
 
 AGENT_NAME = "maestro"
@@ -49,10 +47,6 @@ def maestro(state: AgentState):
         {"role": "user", "content": f"AI Assistant message: {response.content}"}
     ])
 
-    print("\n\n\n\n")
-    print(f"action_response: {action_response}")
-    print("\n\n\n\n")
-
     state_update = {
         "messages": AIMessage(content=response.content),
         "by_agent": AGENT_NAME,
@@ -74,12 +68,10 @@ def maestro(state: AgentState):
 
 
 subagents = [
-    devils_advocate,
-    angel_eyes,
-    capital_freak,
-    cake_man,
-    buzz,
-    mr_t
+    product_strategist,
+    growth_lead,
+    business_lead,
+    technical_lead,
 ]
 
 subagents_descriptions = "\n".join([f"- {subagent.name}: {subagent.short_desc}" for subagent in subagents])
