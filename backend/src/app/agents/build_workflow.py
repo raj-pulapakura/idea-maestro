@@ -31,7 +31,7 @@ def build_workflow() -> StateGraph:
 
     for subagent in subagents:
         workflow.add_node(subagent.name, subagent.build_subgraph())
-        workflow.add_edge(subagent.name, END)
+        workflow.add_edge(subagent.name, "maestro")
 
     route_map = {
         subagent.name: subagent.name for subagent in subagents

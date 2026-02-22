@@ -52,6 +52,14 @@ def stage_edits(edits: list[StagedEdit], summary: str, by: str, runtime: ToolRun
             "staged_edits": normalized_edits,
             "staged_edits_summary": summary,
             "staged_edits_by": by,
+            "history": [
+                {
+                    "type": "specialist_activity",
+                    "activity": "edits_staged",
+                    "by": by,
+                    "docs": [e["doc_id"] for e in normalized_edits],
+                }
+            ],
             "messages": [
                 ToolMessage("Successfully staged edits", tool_call_id=runtime.tool_call_id)
             ]

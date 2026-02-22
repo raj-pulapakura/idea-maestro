@@ -81,6 +81,27 @@ def set_next_agent(
     return new
 
 
+def set_int(
+    old: int | None,
+    new: int | None,
+) -> int | None:
+    return new
+
+
+def set_loop_status(
+    old: str | None,
+    new: str | None,
+) -> str | None:
+    return new
+
+
+def set_optional_text(
+    old: str | None,
+    new: str | None,
+) -> str | None:
+    return new
+
+
 # --- State ---
 
 class Doc(TypedDict):
@@ -117,3 +138,10 @@ class AgentState(TypedDict):
     staged_edits_summary: Annotated[str | None, set_staged_edits_summary]
     staged_edits_by: Annotated[str | None, set_staged_edits_by]
     pending_change_set: Annotated[ChangeSet | None, set_pending_change_set]
+    iteration_count: Annotated[int | None, set_int]
+    max_iterations: Annotated[int | None, set_int]
+    loop_status: Annotated[str | None, set_loop_status]
+    last_routing_error: Annotated[str | None, set_optional_text]
+    consecutive_noop_count: Annotated[int | None, set_int]
+    last_supervisor_action: Annotated[str | None, set_optional_text]
+    history_cursor_at_last_delegate: Annotated[int | None, set_int]
