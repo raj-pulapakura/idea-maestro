@@ -1,17 +1,23 @@
-## idea-maestro
+# Idea Maestro
 
-build your idea with confidence.
+Idea Maestro is a multi-agent workspace for turning raw ideas into execution-ready plans.
 
-### Docs
+You chat with a central orchestrator (`Maestro`), which routes work to specialized agents (Product Strategist, Growth Lead, Business Lead, and Technical Lead). Agents propose edits to a set of living planning documents, and you review and approve changes before they are applied.
 
-- `docs/01-product-vision.md` – what Idea Maestro is and who it’s for.
-- `docs/02-agents-and-ux.md` – agent personas, living documents, and UX concepts.
-- `docs/03-architecture-and-stack.md` – system architecture and low-cost tech stack.
-- `docs/04-monetization-and-credits.md` – pure credits model and pricing mechanics.
+## Key Features
 
-### Docker dev (live reload)
+- Multi-agent orchestration with role-specific specialist agents
+- Thread-based workspaces for running multiple idea sessions
+- Real-time streaming chat and agent/run status updates
+- Living documents that evolve with each session (product, GTM, technical, business, risk, and action docs)
+- Built-in review flow for staged edits (diffs + approve/reject/request changes)
+- Run log and timeline view for visibility into agent and tool activity
 
-- Start: `docker compose -f docker-compose.dev.yml up --build`
-- Frontend: `http://localhost:3000`
-- Backend: `http://localhost:8000/api/test`
-- Env files: `./backend/.env` and `./frontend/.env` are loaded by compose
+## Tech Stack
+
+- Frontend: Next.js (App Router), React, TypeScript, Tailwind CSS
+- Backend: Python, FastAPI
+- Agent runtime: LangGraph + LangChain
+- Models: OpenAI models (currently configured with GPT-family models)
+- Database: PostgreSQL (via `psycopg`)
+- Local/dev infrastructure: Docker + Docker Compose
